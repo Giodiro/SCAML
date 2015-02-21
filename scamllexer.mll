@@ -2,7 +2,6 @@
 {
 (*open Scamlparser        (* The type token is defined in parser.mli *)*)
 open Printf
-exception Eof
 
 let create_hashtable size init =
 	let tbl = Hashtbl.create size in
@@ -36,6 +35,7 @@ type token =
 	| EQ
 	| ASS
 	| END
+	| EOF
 
 (*type state_t = 
 	| State_main 
@@ -62,13 +62,12 @@ let keyword_table =
 
 let digit = ['0'-'9']
 let alpha = ['a'-'z']+
-let string = '"' ['a'-'z']* '"'
 
 rule main = parse
       [' ' '\t']     
     | ['\n' ]  		 { main lexbuf }
     | digit+ as lxm  { printf "digit %s\n" lxm; INT(int_of_string lxm) }
-    | string as str  { printf "string %s\n" str; STRING str}
+    | '"' (['a'-'z' ' ']* as str) '"'  { printf "string %s\n" str; STRING str}
     | alpha as var	 
     	{ try
     		let token= Hashtbl.find keyword_table var in
@@ -84,7 +83,7 @@ rule main = parse
     | ')' 			 {printf "rp\n"; RP }
     | '{'			 { printf "lb\n" ; set lexbuf; LB}
     | ";;" 			 { printf "end\n" ; END }
-    | eof 			 { printf "eof\n";raise Eof }
+    | eof 			 { printf "eof\n"; EOF }
 and set = parse
 	  [' ' '\t']
     | ['\n' ]  		 { set lexbuf }

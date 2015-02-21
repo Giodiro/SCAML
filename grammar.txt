@@ -1,6 +1,7 @@
 SCAML BNF
 
-<program> ::= <global def1> <global defn> (n >= 1)
+<program> ::= <global def>
+			| <expr>;;
 
 <global def> ::= let <var> (<var1>:<type1> <varn>:<typen>):<type> = <expr>;; (n >= 0)
 

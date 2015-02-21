@@ -8,6 +8,7 @@
 %token EQ PLUS MINUS 
 %token LP RP LB RB
 %token COMMA EMPTY_WORD
+%token EOF
 %token <string> TYPE 
 %token <int> INT 
 %token <string> VAR
@@ -21,4 +22,10 @@
 %type <Ast.program> main
 %%
 main:
- | /* empty */     { Empty }
+ | /* empty */     				{ Empty }
+ | glob_def END 				{ Definitions($1) }
+ | expr END						{ Top_Level_App($1) }
+ | error EOF 					{ printf "ERROR\n"; flush stdout; Empty }
+;
+glob_def:
+ | LET
