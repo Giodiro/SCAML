@@ -1,14 +1,14 @@
 SCAML BNF
 
-<program> ::= <global def>
-			| <expr>;;
+<program> ::= <top_level>
+		| <program> <top_level>
+			
+<top_level> ::= <global def> | <expr>;;
 
 <global def> ::= let <var> (<var1>:<type1> <varn>:<typen>):<type> = <expr>;; (n >= 0)
-
 		| let <var>:<type> = <expr>;; 	Variable definition
 
 <local def> ::= let <var> (<var1>:<type1> <varn>:<typen>):<type> = <expr> in <expr>
-
 		| let <var>:<type> = <expr> in <expr> 	Variable definition
 
 <expr> ::= <aexpr> Atomic expression

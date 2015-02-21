@@ -23,9 +23,21 @@
 %%
 main:
  | /* empty */     				{ Empty }
- | glob_def END 				{ Definitions($1) }
- | expr END						{ Top_Level_App($1) }
- | error EOF 					{ printf "ERROR\n"; flush stdout; Empty }
+ | top_level EOF				{ $1 }//Wrong!
+ | main top_level EOF			{ $2 }//Wrong!
 ;
+top_level:
+ | global_def					{ $1 }
+ | expr END						{ $1 }
+;
+
+arg_list:
+ | /* empty */					{ [] }
+ | arg_list VAR TYPEOF TYPE		{ Binding($2, $4) :: $1}
+
 glob_def:
- | LET
+ | LET VAR LP arg_list RP TYPEOF TYPE ASS expr END	
+								{ Func_Glob_Binding(Binding($2, $7), $4, $9) }
+ | LET VAR TYPEOF TYPE ASS EXPR END
+								{ Func_Glob_Binding(Binding($2, $4), $6) }
+;
