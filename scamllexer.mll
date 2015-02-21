@@ -37,6 +37,10 @@ type token =
 	| ASS
 	| END
 
+(*type state_t = 
+	| State_main 
+	| State_set*)
+
 let keyword_table = 
 	create_hashtable 16 [
 		("if", IF);
@@ -54,7 +58,7 @@ let keyword_table =
 		("int", TYPE "int");
 		("bool", TYPE "bool");
 	] 
-}
+} 
 
 let digit = ['0'-'9']
 let alpha = ['a'-'z']+
@@ -78,18 +82,19 @@ rule main = parse
     | '-'			 {printf "min\n"; MIN }
     | '('			 {printf "lp\n"; LP }
     | ')' 			 {printf "rp\n"; RP }
-    | '{'			 { printf "lb\n" ;LB; set lexbuf }
+    | '{'			 { printf "lb\n" ; set lexbuf; LB}
     | ";;" 			 { printf "end\n" ; END }
     | eof 			 { printf "eof\n";raise Eof }
 and set = parse
 	  [' ' '\t']
     | ['\n' ]  		 { set lexbuf }
-	| alpha as w 	 { printf "word %s\n" w;WORD w }
-	| ','         	 { printf "commma\n"; COMMA }
-	| ':'			 { printf "empty\n"; EMPTY_WORD }
-	| '}'			 { printf "rb\n";RB; main lexbuf }
+	| alpha as w 	 { printf "word %s\n" w; set lexbuf; WORD w }
+	| ','         	 { printf "commma\n"; set lexbuf; COMMA }
+	| ':'			 { printf "empty\n"; set lexbuf; EMPTY_WORD }
+	| '}'			 { printf "rb\n"; main lexbuf; RB }
 
 {
+
 	let rec parse lexbuf = 
 		let token = main lexbuf in
 		parse lexbuf

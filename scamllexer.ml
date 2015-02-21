@@ -37,6 +37,10 @@ type token =
 	| ASS
 	| END
 
+type state_t = 
+	| State_main 
+	| State_set
+
 let keyword_table = 
 	create_hashtable 16 [
 		("if", IF);
@@ -55,7 +59,7 @@ let keyword_table =
 		("bool", TYPE "bool");
 	] 
 
-# 59 "scamllexer.ml"
+# 63 "scamllexer.ml"
 let __ocaml_lex_tables = {
   Lexing.lex_base = 
    "\000\000\242\255\001\000\244\255\245\255\246\255\247\255\248\255\
@@ -198,93 +202,93 @@ let rec main lexbuf =
 and __ocaml_lex_main_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 65 "scamllexer.mll"
+# 69 "scamllexer.mll"
                   ( main lexbuf )
-# 204 "scamllexer.ml"
+# 208 "scamllexer.ml"
 
   | 1 ->
 let
-# 66 "scamllexer.mll"
+# 70 "scamllexer.mll"
                 lxm
-# 210 "scamllexer.ml"
-= Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 66 "scamllexer.mll"
-                     ( printf "digit %s\n" lxm; INT(int_of_string lxm) )
 # 214 "scamllexer.ml"
+= Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
+# 70 "scamllexer.mll"
+                     ( printf "digit %s\n" lxm; INT(int_of_string lxm) )
+# 218 "scamllexer.ml"
 
   | 2 ->
 let
-# 67 "scamllexer.mll"
+# 71 "scamllexer.mll"
                 str
-# 220 "scamllexer.ml"
-= Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 67 "scamllexer.mll"
-                     ( printf "string %s\n" str; STRING str)
 # 224 "scamllexer.ml"
+= Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
+# 71 "scamllexer.mll"
+                     ( printf "string %s\n" str; STRING str)
+# 228 "scamllexer.ml"
 
   | 3 ->
 let
-# 68 "scamllexer.mll"
+# 72 "scamllexer.mll"
                var
-# 230 "scamllexer.ml"
+# 234 "scamllexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 69 "scamllexer.mll"
+# 73 "scamllexer.mll"
      ( try
     		let token= Hashtbl.find keyword_table var in
     		printf "token %s\n" var;token 
     	  with Not_found -> 
     	   	printf "Var %s\n" var; VAR var )
-# 238 "scamllexer.ml"
+# 242 "scamllexer.ml"
 
   | 4 ->
-# 74 "scamllexer.mll"
+# 78 "scamllexer.mll"
                  (printf "eq\n" ; EQ )
-# 243 "scamllexer.ml"
+# 247 "scamllexer.ml"
 
   | 5 ->
-# 75 "scamllexer.mll"
+# 79 "scamllexer.mll"
              ( printf "typeof\n" ; TYPEOF )
-# 248 "scamllexer.ml"
+# 252 "scamllexer.ml"
 
   | 6 ->
-# 76 "scamllexer.mll"
+# 80 "scamllexer.mll"
              (printf "ass\n"; ASS )
-# 253 "scamllexer.ml"
+# 257 "scamllexer.ml"
 
   | 7 ->
-# 77 "scamllexer.mll"
+# 81 "scamllexer.mll"
              (printf "plus \n"; PLUS )
-# 258 "scamllexer.ml"
+# 262 "scamllexer.ml"
 
   | 8 ->
-# 78 "scamllexer.mll"
+# 82 "scamllexer.mll"
              (printf "min\n"; MIN )
-# 263 "scamllexer.ml"
+# 267 "scamllexer.ml"
 
   | 9 ->
-# 79 "scamllexer.mll"
+# 83 "scamllexer.mll"
              (printf "lp\n"; LP )
-# 268 "scamllexer.ml"
+# 272 "scamllexer.ml"
 
   | 10 ->
-# 80 "scamllexer.mll"
+# 84 "scamllexer.mll"
               (printf "rp\n"; RP )
-# 273 "scamllexer.ml"
+# 277 "scamllexer.ml"
 
   | 11 ->
-# 81 "scamllexer.mll"
-             ( printf "lb\n" ;LB; set lexbuf )
-# 278 "scamllexer.ml"
+# 85 "scamllexer.mll"
+             ( printf "lb\n" ; set lexbuf; LB)
+# 282 "scamllexer.ml"
 
   | 12 ->
-# 82 "scamllexer.mll"
+# 86 "scamllexer.mll"
                ( printf "end\n" ; END )
-# 283 "scamllexer.ml"
+# 287 "scamllexer.ml"
 
   | 13 ->
-# 83 "scamllexer.mll"
+# 87 "scamllexer.mll"
               ( printf "eof\n";raise Eof )
-# 288 "scamllexer.ml"
+# 292 "scamllexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; __ocaml_lex_main_rec lexbuf __ocaml_lex_state
 
@@ -293,41 +297,42 @@ and set lexbuf =
 and __ocaml_lex_set_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 86 "scamllexer.mll"
+# 90 "scamllexer.mll"
                   ( set lexbuf )
-# 299 "scamllexer.ml"
+# 303 "scamllexer.ml"
 
   | 1 ->
 let
-# 87 "scamllexer.mll"
+# 91 "scamllexer.mll"
             w
-# 305 "scamllexer.ml"
-= Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 87 "scamllexer.mll"
-                ( printf "word %s\n" w;WORD w )
 # 309 "scamllexer.ml"
+= Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
+# 91 "scamllexer.mll"
+                ( printf "word %s\n" w; set lexbuf; WORD w )
+# 313 "scamllexer.ml"
 
   | 2 ->
-# 88 "scamllexer.mll"
-                 ( printf "commma\n"; COMMA )
-# 314 "scamllexer.ml"
+# 92 "scamllexer.mll"
+                 ( printf "commma\n"; set lexbuf; COMMA )
+# 318 "scamllexer.ml"
 
   | 3 ->
-# 89 "scamllexer.mll"
-          ( printf "empty\n"; EMPTY_WORD )
-# 319 "scamllexer.ml"
+# 93 "scamllexer.mll"
+          ( printf "empty\n"; set lexbuf; EMPTY_WORD )
+# 323 "scamllexer.ml"
 
   | 4 ->
-# 90 "scamllexer.mll"
-          ( printf "rb\n";RB; main lexbuf )
-# 324 "scamllexer.ml"
+# 94 "scamllexer.mll"
+          ( printf "rb\n"; main lexbuf; RB )
+# 328 "scamllexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; __ocaml_lex_set_rec lexbuf __ocaml_lex_state
 
 ;;
 
-# 92 "scamllexer.mll"
+# 96 "scamllexer.mll"
  
+
 	let rec parse lexbuf = 
 		let token = main lexbuf in
 		parse lexbuf
@@ -344,4 +349,4 @@ let
 
 	let _ = Printexc.print main ()
 
-# 348 "scamllexer.ml"
+# 353 "scamllexer.ml"
