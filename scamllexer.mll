@@ -23,6 +23,8 @@ type token =
 	| INT of int
 	| VAR of string
 	| WORD of string
+	| STRING of string
+	| TYPEOF 
 	| LB
 	| RB
 	| LP
@@ -33,6 +35,7 @@ type token =
 	| PLUS
 	| EQ
 	| ASS
+	| END
 
 let keyword_table = 
 	create_hashtable 16 [
@@ -48,17 +51,20 @@ let keyword_table =
 		("strapp", STRAPP);
 		("set", TYPE "set");
 		("string", TYPE "string");
+		("int", TYPE "int");
 		("bool", TYPE "bool");
 	] 
 }
 
 let digit = ['0'-'9']
 let alpha = ['a'-'z']+
+let string = '"' ['a'-'z']* '"'
 
 rule main = parse
       [' ' '\t']     
     | ['\n' ]  		 { main lexbuf }
     | digit+ as lxm  { printf "digit %s\n" lxm; INT(int_of_string lxm) }
+    | string as str  { printf "string %s\n" str; STRING str}
     | alpha as var	 
     	{ try
     		let token= Hashtbl.find keyword_table var in
@@ -66,19 +72,21 @@ rule main = parse
     	  with Not_found -> 
     	   	printf "Var %s\n" var; VAR var }	
     | "=="		     {printf "eq\n" ; EQ }
+    | ':'			 { printf "typeof\n" ; TYPEOF }
     | '='			 {printf "ass\n"; ASS }
     | '+'			 {printf "plus \n"; PLUS }
     | '-'			 {printf "min\n"; MIN }
     | '('			 {printf "lp\n"; LP }
     | ')' 			 {printf "rp\n"; RP }
     | '{'			 { printf "lb\n" ;LB; set lexbuf }
+    | ";;" 			 { printf "end\n" ; END }
     | eof 			 { printf "eof\n";raise Eof }
 and set = parse
 	  [' ' '\t']
     | ['\n' ]  		 { set lexbuf }
 	| alpha as w 	 { printf "word %s\n" w;WORD w }
-	| ','         	 { printf "commma\n";COMMA }
-	| ':'			 { printf "empty\n";EMPTY_WORD }
+	| ','         	 { printf "commma\n"; COMMA }
+	| ':'			 { printf "empty\n"; EMPTY_WORD }
 	| '}'			 { printf "rb\n";RB; main lexbuf }
 
 {
