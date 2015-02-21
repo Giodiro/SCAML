@@ -1,0 +1,39 @@
+SCAML BNF
+
+<program> ::= <global def1> <global defn> (n >= 1)
+
+<global def> ::= let <var> (<var1>:<type1> <varn>:<typen>):<type> = <expr>;; (n >= 0)
+
+		| let <var>:<type> = <expr>;; Variable definition
+
+<local def> ::= let <var> (<var1>:<type1> <varn>:<typen>):<type> = <expr> in <expr>
+
+		| let <var>:<type> = <expr> in <expr> Variable definition
+
+<expr> ::= <aexpr> Atomic expression
+		| <local def>
+		| <conditional>
+		| (<expr> <aexpr>) Function application
+
+<aexpr> ::= (<expr>) Parenthesized expression
+		| <var>
+		| <set> Set or language
+		| <built in> Built-in functions 
+
+<conditional> ::= if <aexpr> then <aexpr> else <aexpr>
+
+<var> ::= <alpha1><alpha2><alphan> (n >= 1) & (<var> must not be in <reserved>)
+
+<word> ::= <alpha1><alpha2><alphan>
+
+		| : Empty word
+
+<set> ::= {<word1>, <wordn>} (n >= 0) & (all words are different)
+
+<type> ::= int | string | set | bool
+
+<built in> ::= cons | head | tail | == | + | - | strcomp | strapp
+
+<reserved> ::= <built in>
+		| if | then | else | let | in
+		| <type> 
