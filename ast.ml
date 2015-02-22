@@ -1,3 +1,6 @@
+type myBool =
+  | T | F
+
 type myType =
 	| Int_type
 	| String_type
@@ -5,10 +8,22 @@ type myType =
 	| Bool_type
 
 type binding = 
-	{ 
-	  name_type : def ;
-	  value 	: expr;
-	}
+{ 
+	name_type : def  ;
+	value 	  : aexpr;
+}
+
+type closure = 
+{
+ 	arguments	:	list def   ;
+ 	env 		  :	environment;
+ 	lambda		:	binding    ;
+}
+
+type evaluable =
+  | Eval_expr of expr
+  | Eval_closure of closure
+
 
 type def = 
 	| Binding of string * myType
@@ -34,8 +49,10 @@ type expr =
  	| If of aexpr * aexpr * aexpr
  	| Application of expr * (list aexpr)
 
+  
 type aexpr = 
 	| Expr of expr
+  | Closure of closure  (* This type is only visible to the interpreter *)
 	| Var of string 
 	| Set of list word 
 	| Int of int 
