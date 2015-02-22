@@ -39,7 +39,7 @@ rule main = parse
       [' ' '\t']     
     | ['\n' ]  		 { main lexbuf }
     | digit+ as lxm  { printf "digit %s\n" lxm; INT(int_of_string lxm) }
-    | '"' (['a'-'z' ' ']* as str) '"'  { printf "string %s\n" str; STRING str}
+    | '"' ((['a'-'z' ' ']* ':') as str) '"'  { printf "string %s\n" str; STRING str}
     | alpha as var	 
     	{ try
     		let token= Hashtbl.find keyword_table var in
