@@ -9,11 +9,10 @@ type def =
 
 type program = 
 	| Program of list top_level
-  | Empty
   
 type top_level =
-  | Definition of global_def
-  | Expression of expr
+  	| Definition of global_def
+  	| Expression of expr
 
 type global_def =
 	| Func_Glob_Binding of def * (list def) * expr

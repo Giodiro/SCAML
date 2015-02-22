@@ -23,8 +23,7 @@ SCAML BNF
 		| <string>
 		| <built in> 			Built-in functions 
 
-<list aexpr> ::= <aexpr>
-		| <aexpr> <list aexpr>
+<list aexpr> ::= <aexpr1> <aexpr2> <aexprn>		(n >= 0)
 
 <conditional> ::= if <aexpr> then <aexpr> else <aexpr>
 

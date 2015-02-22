@@ -1,41 +1,13 @@
 (* File scamllexer.mll *)
 {
-(*open Scamlparser        (* The type token is defined in parser.mli *)*)
+open Scamlparser        (* The type token is defined in parser.mli *)
 open Printf
+open Ast
 
 let create_hashtable size init =
 	let tbl = Hashtbl.create size in
 		List.iter (fun (key, data) -> Hashtbl.add tbl key data) init;
 		tbl
-type token =
-	| IF
-	| THEN
-	| ELSE
-	| LET
-	| IN
-	| CONS
-	| HEAD
-	| TAIL
-	| STRCOMP
-	| STRAPP
-	| TYPE of string
-	| INT of int
-	| VAR of string
-	| WORD of string
-	| STRING of string
-	| TYPEOF 
-	| LB
-	| RB
-	| LP
-	| RP
-	| EMPTY_WORD
-	| COMMA
-	| MIN
-	| PLUS
-	| EQ
-	| ASS
-	| END
-	| EOF
 
 (*type state_t = 
 	| State_main 
@@ -53,10 +25,10 @@ let keyword_table =
 		("tail", TAIL);
 		("strcomp", STRCOMP);
 		("strapp", STRAPP);
-		("set", TYPE "set");
-		("string", TYPE "string");
-		("int", TYPE "int");
-		("bool", TYPE "bool");
+		("set", TYPE(Set_type));
+		("string", TYPE(String_type));
+		("int", TYPE(Int_type));
+		("bool", TYPE(Bool_type));
 	] 
 } 
 
@@ -91,22 +63,3 @@ and set = parse
 	| ','         	 { printf "commma\n"; set lexbuf; COMMA }
 	| ':'			 { printf "empty\n"; set lexbuf; EMPTY_WORD }
 	| '}'			 { printf "rb\n"; main lexbuf; RB }
-
-{
-
-	let rec parse lexbuf = 
-		let token = main lexbuf in
-		parse lexbuf
-
-	let main () =
-		let cin =
-			if Array.length Sys.argv > 1
-			then open_in Sys.argv.(1)
-			else stdin
-		in
-		let lexbuf = Lexing.from_channel cin in
-		try parse lexbuf
-		with Eof -> ()
-
-	let _ = Printexc.print main ()
-}
