@@ -1,32 +1,37 @@
-type token =
-  | IF
-  | THEN
-  | ELSE
-  | LET
-  | IN
-  | ASS
-  | END
+(* The type of tokens. *)
+type token = 
+  | WORD of (string)
+  | VAR of (string)
   | TYPEOF
-  | CONS
-  | HEAD
+  | TYPE of (Ast.myType)
+  | THEN
   | TAIL
+  | STRING of (string)
   | STRCOMP
   | STRAPP
-  | EQ
+  | RP
+  | RB
   | PLUS
   | MINUS
   | LP
-  | RP
+  | LET
   | LB
-  | RB
-  | COMMA
-  | EMPTY_WORD
-  | EOF
-  | TYPE of (Ast.myType)
   | INT of (int)
-  | VAR of (string)
-  | WORD of (string)
-  | STRING of (string)
+  | IN
+  | IF
+  | HEAD
+  | EQ
+  | EOF
+  | END
+  | EMPTY_WORD
+  | ELSE
+  | CONS
+  | COMMA
+  | ASS
 
-val main :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> Ast.program
+(* This exception is raised by the monolithic API functions. *)
+exception Error
+
+(* The monolithic API. *)
+val main: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Ast.program)
+

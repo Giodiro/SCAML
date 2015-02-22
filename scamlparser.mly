@@ -15,15 +15,15 @@
 %token <string> WORD 
 %token <string> STRING
 %right IF THEN ELSE
-%left EQUALS
+%left EQ
 %left PLUS MINUS
 %nonassoc LP RP LB RB
 %start main
 %type <Ast.program> main
 %%
 main:
- | /* empty */     				{ [] }
- | main top_level EOF			{ $2::$1 }
+ | EOF   				{ [] }
+ | top_level main 		{ $1::$2 }
 ;
 top_level:
  | glob_def						{ $1 }
@@ -46,12 +46,14 @@ local_def:
  								{ Func_Loc_Binding(Binding($2, $7), $4, $9, $11) }
  | LET VAR TYPEOF TYPE ASS expr IN expr 
  								{ Var_Loc_Binding(Binding ($2, $4), $6, $8) }
+;
 
 expr:
  | aexpr 						{ $1 }
  | local_def 					{ $1 }
  | IF aexpr THEN aexpr ELSE aexpr { If($2, $4, $6) }
  | LP expr list_aexpr RP 		{ Application($2, $3) }
+;
 
 aexpr:
  | LP expr RP 					{ Expr($2) }
@@ -67,23 +69,24 @@ aexpr:
  | EQ 							{ Built_In (Eq) }
  | PLUS							{ Built_In (Plus) }
  | MINUS						{ Built_In (Minus) }
+;
 
 list_aexpr:
- | /* empty */					{ [] }
- | list_aexpr aexpr 			{ $2::$1 }
+ | LP RP						{ [] }
+ | non_empty_list_aexpr 		{ $1 }
+;
+
+non_empty_list_aexpr:
+ | aexpr 						{ [$1] }
+ | non_empty_list_aexpr aexpr 	{ $2::$1 }
+;
 
 word_list:
  | /* empty */					{ [] }
  | word_list COMMA word   		{ $3::$1 }
+;
 
 word:
  | WORD 						{ Non_Empty_Word($1) }
  | EMPTY_WORD 					{ Empty_Word }
-
-
-
-
-
-
-
-
+;

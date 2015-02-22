@@ -262,7 +262,8 @@ let
               ( printf "eof\n"; EOF )
 # 264 "scamllexer.ml"
 
-  | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; __ocaml_lex_main_rec lexbuf __ocaml_lex_state
+  | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; 
+      __ocaml_lex_main_rec lexbuf __ocaml_lex_state
 
 and set lexbuf =
     __ocaml_lex_set_rec lexbuf 17
@@ -271,54 +272,35 @@ and __ocaml_lex_set_rec lexbuf __ocaml_lex_state =
       | 0 ->
 # 61 "scamllexer.mll"
                   ( set lexbuf )
-# 275 "scamllexer.ml"
+# 276 "scamllexer.ml"
 
   | 1 ->
 let
 # 62 "scamllexer.mll"
             w
-# 281 "scamllexer.ml"
+# 282 "scamllexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
 # 62 "scamllexer.mll"
                 ( printf "word %s\n" w; set lexbuf; WORD w )
-# 285 "scamllexer.ml"
+# 286 "scamllexer.ml"
 
   | 2 ->
 # 63 "scamllexer.mll"
                  ( printf "commma\n"; set lexbuf; COMMA )
-# 290 "scamllexer.ml"
+# 291 "scamllexer.ml"
 
   | 3 ->
 # 64 "scamllexer.mll"
           ( printf "empty\n"; set lexbuf; EMPTY_WORD )
-# 295 "scamllexer.ml"
+# 296 "scamllexer.ml"
 
   | 4 ->
 # 65 "scamllexer.mll"
           ( printf "rb\n"; main lexbuf; RB )
-# 300 "scamllexer.ml"
+# 301 "scamllexer.ml"
 
-  | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; __ocaml_lex_set_rec lexbuf __ocaml_lex_state
+  | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; 
+      __ocaml_lex_set_rec lexbuf __ocaml_lex_state
 
 ;;
 
-# 67 "scamllexer.mll"
- 
-
-	let rec parse lexbuf = 
-		let token = main lexbuf in
-		parse lexbuf
-
-	let main () =
-		let cin =
-			if Array.length Sys.argv > 1
-			then open_in Sys.argv.(1)
-			else stdin
-		in
-		let lexbuf = Lexing.from_channel cin in
-		try parse lexbuf
-		with Eof -> ()
-
-	let _ = Printexc.print main ()
-
-# 325 "scamllexer.ml"
