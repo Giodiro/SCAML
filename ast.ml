@@ -4,6 +4,12 @@ type myType =
 	| Set_type
 	| Bool_type
 
+type binding = 
+	{ 
+	  name_type : def ;
+	  value 	: expr;
+	}
+
 type def = 
 	| Binding of string * myType
 

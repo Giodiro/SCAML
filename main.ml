@@ -1,5 +1,37 @@
 open Ast
 
+type environment =
+ | Global_env of frame
+ | Whatever of frame * environment
+
+type frame =
+ | Bindings of list binding
+
+ type closure = {
+ 	arguments	:	list def ;
+ 	env 		:	environment;
+ 	lambda		:	binding;
+ }
+
+exception Unbound
+
+let rec lookup name env =
+ let rec lookup_frame name fr =
+ 	match fr with 
+ 	 | [] -> throw Unbound
+ 	 | h::t -> (match h.name_type with
+ 	 			| Binding(n, t) -> if n = name 
+ 	 							   then h.value 
+ 	 							   else lookup_frame t)
+ in match env with
+ 	 | Global_env(f) -> lookup_frame name f
+ 	 | Whatever(f,e) -> try lookup_frame name f 
+ 						with Unbound -> lookup name e
+;;
+
+let make_binding name value env =
+	
+
 let rec parse lexbuf = 
 	let token = main lexbuf in
 	parse lexbuf
@@ -18,8 +50,17 @@ let main () =
 
 let _ = Printexc.print main ()
 
+let myCons a b =
+
+
+let init_env () =
+
+
 let rec interpret prog = match prog with
-	| Program (tl_list) -> interpret_tl_list
+	| Program (tl_list) -> (
+
+		interpret_tl_list tl_list
+	)
 ;;
 
 let rec interpret_tl_list tl_list = match tl_list with
@@ -32,8 +73,9 @@ let rec interpret_tl_list tl_list = match tl_list with
 ;;
 		
 
-let rec interpret_global_def gd = match gd with
-	| Func_Glob_Binding (def,args,e) ->
+let rec interpret_global_def gd env = match gd with
+	| Func_Glob_Binding (def,args,e) -> (
+		)
 	| Var_Glob_Binding (def,e) ->
 ;;
 
