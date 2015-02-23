@@ -1,6 +1,11 @@
 open Ast
 
 (* TODO: parametrize these exceptions *)
+(* exception Unbound of string*)
+(* exception HeadOfEmptySet of string*)
+(* exception TailOfEmptySet of string*)
+(* exception NotApplicable of string*)
+(* exception WrongNumberOfArguments of string*)
 exception Unbound
 exception HeadOfEmptySet
 exception TailOfEmptySet
@@ -59,6 +64,8 @@ let myHead aSet = match aSet with
   | h::t -> h
 ;;
 
+(* myTail: Set_type -> Set_type *)
+(* myTail: list word -> list word *)
 let myTail aSet = match aSet with
   | [] -> raise TailOfEmptySet
   | h::t -> t
@@ -68,9 +75,17 @@ let myTail aSet = match aSet with
 (* myEq: int -> int -> myBool *)
 let myEq i1 i2 = if i1 = i2 then T else F;;
 
+(* myPlus: Int_type -> Int_type -> Int_type *)
+(* myPlus: int -> int -> int *)
 let myPlus i1 i2 = Int(i1+i2);;
 
 let myMinus i1 i2 = Int(i1-i2);;
+
+(* myStrapp: String_type -> Word_type -> Word_type *)
+(* myStrapp: string -> word -> word *)
+let myStrapp str w = match m with
+  | Empty_Word -> Non_Empty_Word str
+  | Non_Empty_Word w -> Non_Empty_Word (w ^ str);;
 
 (* TODO: define other builtin functions. Especially their types *)
 

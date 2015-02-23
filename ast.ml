@@ -6,6 +6,7 @@ type myType =
 	| String_type
 	| Set_type
 	| Bool_type
+	| Word_type		(*we use the other types so to specify types of variables but never say a word is of type word -> do we need it*)
 
 type binding = 
 { 
