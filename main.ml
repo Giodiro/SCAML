@@ -136,7 +136,8 @@ let rec interpret_expr e env = match e with
                                 | [] -> []
                                 | h::t -> (interpret_aexpr h)::(args t)
                                in match func with
-                                | Closure(c)  ->
+                                | Closure(c)   -> apply_closure c args
+                                (*need to create bindings between args and c.parameters; extend c.env with the new bindings; evaluate lambda in new env. *)
                                 | Built_In(bi) ->
                                 | _ -> raise NotApplicable
 ;;

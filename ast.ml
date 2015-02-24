@@ -16,9 +16,9 @@ type binding =
 
 type closure = 
 {
- 	arguments	:	list def   ;
+ 	parameters:	list def   ;
  	env 		  :	environment;
- 	lambda		:	binding    ;
+ 	lambda		:	expr    ;
 }
 
 type evaluable =
