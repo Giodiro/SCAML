@@ -50,7 +50,7 @@ rule main = parse
     | ':'			 { printf "typeof\n" ; TYPEOF }
     | '='			 {printf "ass\n"; ASS }
     | '+'			 {printf "plus \n"; PLUS }
-    | '-'			 {printf "min\n"; MIN }
+    | '-'			 {printf "min\n"; MINUS }
     | '('			 {printf "lp\n"; LP }
     | ')' 			 {printf "rp\n"; RP }
     | '{'			 { printf "lb\n" ; set lexbuf; LB}
