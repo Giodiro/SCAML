@@ -19,15 +19,15 @@
 %left PLUS MINUS
 %nonassoc LP RP LB RB
 %start main
-%type <Ast.program> main
+%type <Ast.top_level list> main
 %%
 main:
- | EOF   				{ [] }
+ | EOF   				      { [] }
  | top_level main 		{ $1::$2 }
 ;
 top_level:
- | glob_def						{ $1 }
- | expr END						{ $1 }
+ | glob_def						{ Definition $1 }
+ | expr END						{ Expression $1 }
 ;
 
 arg_list:
@@ -49,8 +49,8 @@ local_def:
 ;
 
 expr:
- | aexpr 						{ $1 }
- | local_def 					{ $1 }
+ | aexpr 						{ Atomic_expr $1 }
+ | local_def 					{ Local_def $1 }
  | IF aexpr THEN aexpr ELSE aexpr { If($2, $4, $6) }
  | LP expr list_aexpr RP 		{ Application($2, $3) }
 ;

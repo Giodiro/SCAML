@@ -68,6 +68,3 @@ and closure =
  	env 		  :	environment;
  	lambda		:	expr    ;
 }
-
-type program = 
-	| Program of (top_level list)

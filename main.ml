@@ -142,8 +142,7 @@ let apply_1 func args =
 
 (* SECTION Interpreter *)
 
-let rec interpret prog = match prog with
-	| Program (tl_list) -> interpret_tl_list tl_list (Global_env [])
+let rec interpret tl_list = interpret_tl_list tl_list (Global_env [])
   
 (* interpret_tl_list: list top_level -> environment -> () *)
 and interpret_tl_list tl_list env = 
