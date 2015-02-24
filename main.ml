@@ -54,21 +54,21 @@ let extend_env env = (Bindings([]), env);;
 (* myCons: string -> list word -> list word *)
 let myCons str aSet =
   let str_to_word str = if str = ":" then Empty_Word else Non_Empty_Word(str)
-  in (str_to_word str)::aSet
+  in Set((str_to_word str)::aSet)
 ;;
 
 (* myHead: Set_type -> Word_type *)
 (* myHead: list word -> word *)
 let myHead aSet = match aSet with
   | [] -> raise HeadOfEmptySet
-  | h::t -> h
+  | h::t -> Word(h)
 ;;
 
 (* myTail: Set_type -> Set_type *)
 (* myTail: list word -> list word *)
 let myTail aSet = match aSet with
   | [] -> raise TailOfEmptySet
-  | h::t -> t
+  | h::t -> Set(t)
 ;;
 
 (* myEq: Int_type -> Int_type -> Bool_type *)
@@ -83,13 +83,47 @@ let myMinus i1 i2 = Int(i1-i2);;
 
 (* myStrapp: String_type -> Word_type -> Word_type *)
 (* myStrapp: string -> word -> word *)
-let myStrapp str w = match m with
+let myStrapp w str = match m with
   | Empty_Word -> Non_Empty_Word str
-  | Non_Empty_Word w -> Non_Empty_Word (w ^ str);;
-
-(* TODO: define other builtin functions. Especially their types *)
+  | Non_Empty_Word w -> Non_Empty_Word (w ^ str)
+;;
+(* 
+  see http://caml.inria.fr/pub/docs/manual-caml-light/node14.17.html for compare_strings.
+  Returns 0 if s1 and s2 are equal (or one is prefix of the other),
+  -1 if str1 is lexicographically before str2,
+  1 if str2 is lexicographically before str1
+  myStrcomp: string -> string -> Int
+*)
+let myStrcomp str1 str2 =
+  match compare_strings str1 str2 with
+   | 0 | 2 | -2 -> Int(0)
+   | _          -> Int(_)
+;;
 
 (* END Built in functions *)
+
+(* SECTION Helper functions *)
+
+let print_aexpr ae = match ae with
+  | Set(wl) -> (
+    let rec print_set s = match s with
+      [] -> print_string "}"
+      h::t -> (match h with
+                | Non_Empty_Word(w) -> print_string w; print_string ", "
+                | Empty_Word        -> print_string ":"; print_string ", ")
+    in (print_string "{ "; print_set wl))
+  | Int(i) -> print_int i
+  | Word(w) -> (match w with
+                | Non_Empty_Word(wo) -> print_string wo; print_string ", "
+                | Empty_Word        -> print_string ":"; print_string ", ")
+  | Bool(b) -> (match b with
+                | T -> print_string "True "
+                | F -> print_string "False ")
+  | String (s) -> print_string s
+  | _ -> NotApplicable
+;;
+
+(* END Helper functions *)
 
 (* SECTION Interpreter *)
 
@@ -104,7 +138,7 @@ let rec interpret_tl_list tl_list env =
    | h::t -> 
     (match h with
      | Definition (d) -> interpret_tl_list t (interpret_global_def d env)
-     | Expression (e) -> print interpret_expr e env; (* TODO: define function print to print results (print: aexpr -> unit) *)
+     | Expression (e) -> print_aexpr interpret_expr e env;
                          interpret_tl_list t env
     )
 ;;
@@ -132,13 +166,12 @@ let rec interpret_expr e env = match e with
 	| If(guard, consequent, alternate) -> if interpret_aexpr guard then interpret_aexpr consequent
                                                                  else interpret_aexpr alternate
 	| Application(e, elist) -> let func = (interpret_expr e) in
-                               let rec args elist = match elist with
+                               let rec args elist = match elist with (* Evaluates all arguments *)
                                 | [] -> []
                                 | h::t -> (interpret_aexpr h)::(args t)
                                in match func with
-                                | Closure(c)   -> apply_closure c args
-                                (*need to create bindings between args and c.parameters; extend c.env with the new bindings; evaluate lambda in new env. *)
-                                | Built_In(bi) ->
+                                | Closure(c)   -> apply_closure c (args elist)
+                                | Built_In(bi) -> apply_built_in bi (args elist)
                                 | _ -> raise NotApplicable
 ;;
 
@@ -160,20 +193,30 @@ let apply_closure c args =
   in interpret_aexpr (c.lambda).value (args_bindings (extend_env c.env) c.arguments args)
 ;;
 
+let apply_2 func args =
+  match args with
+    [a1; a2] -> func a1 a2
+   | _  	   -> raise WrongNumberOfArguments
+;;
+
+let apply_1 func args = 
+  match args with
+   | [a1] -> func a1
+   | _    -> raise WrongNumberOfArguments
+;;
+
+(*apply_built_in: Built_In -> list aexpr -> aexpr *)
 let apply_built_in bi args = match bi with
-  | Cons -> myCons args (* TODO: find a way of destructuring the args so we can pass them *)
-	| Head -> (myHead)...
-	| Tail -> (myTail)
-	| Eq ->   (myEq)
-	| Plus -> (myPlus)
-	| Minus -> (myMinus)
-	| Strcomp -> (myStrcomp)
-	| Stradd ->  (myStrapp)
-
+  | Cons -> apply_2 myCons args
+	| Head -> apply_1 myHead args
+	| Tail -> apply_1 myTail args
+	| Eq ->   appply_2 myEq args
+	| Plus -> apply_2 myPlus args
+	| Minus -> apply_2 myMinus args
+	| Strcomp -> apply_2 myStrcomp args
+	| Strapp ->  apply_2 myStrapp args
+;;
 (* END Interpreter *)
-
-
-
 
 let rec parse lexbuf = 
 	let token = main lexbuf in
@@ -187,8 +230,7 @@ let main () =
 	in
 	let lexbuf = Lexing.from_channel cin in
 		let result = Scamlparser.main Scamllexer.main lexbuf
-		in
-
-	with Eof -> ()
+		in interpret result
+;;
 
 let _ = Printexc.print main ()
