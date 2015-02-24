@@ -57,6 +57,8 @@ type aexpr =
 	| Var of string 
 	| Set of list word 
 	| Int of int 
+  | Word of word
+  | Bool of myBool
 	| String of string
 	| Built_In of built_in 
 
