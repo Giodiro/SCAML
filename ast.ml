@@ -21,10 +21,6 @@ type built_in =
 	| Minus
 	| Strcomp
 	| Strapp  
-  
-  
-
-  
 
 type def = 
 	| Binding of string * myType
@@ -64,7 +60,7 @@ and binding =
 }
 and closure = 
 {
- 	parameters:	def list   ;
+ 	parameters	:	def list   ;
  	env 		  :	environment;
  	lambda		:	expr    ;
 }

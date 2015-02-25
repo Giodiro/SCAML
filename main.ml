@@ -79,8 +79,7 @@ let myPlus i1 i2 = Int(i1+i2);;
 
 let myMinus i1 i2 = Int(i1-i2);;
 
-(* myStrapp: String_type -> Word_type -> Word_type *)
-(* myStrapp: string -> word -> word *)
+(* myStrapp: word -> string -> word *)
 let myStrapp w str = match w with
   | Empty_Word -> Non_Empty_Word str
   | Non_Empty_Word w -> Non_Empty_Word (w ^ str)
@@ -125,12 +124,12 @@ let myBool_to_bool mBool = match mBool with
   | T -> true
   | F -> false
 ;;
-
+(*
 let apply_2 func args =
   match args with
     [a1; a2] -> func a1 a2
    | _  	   -> raise WrongNumberOfArguments
-;;
+;;*)
 
 let apply_1 func args = 
   match args with
@@ -179,12 +178,12 @@ and interpret_expr e env = match e with
                                           else interpret_aexpr alternate env
          | _       -> raise WrongType)
 	| Application(e, exprList) -> let func = (interpret_expr e env) in
-                                 let rec args elist = match elist with (* Evaluates all arguments *)
+                                 let rec eval_args elist = match elist with (* Evaluates all arguments *)
                                   | [] -> []
-                                  | h::t -> (interpret_aexpr h)::(args t)
+                                  | h::t -> (interpret_aexpr h env)::(eval_args t)
                                  in match func with
-                                  | Closure(c)   -> apply_closure c (args exprList)
-                                  | Built_In(bi) -> apply_built_in bi (args exprList)
+                                  | Closure(c)   -> apply_closure c (eval_args exprList)
+                                  | Built_In(bi) -> apply_built_in bi (eval_args exprList)
                                   | _ -> raise NotApplicable
 
 (* interpret_aexpr: aexpr -> environment -> aexpr *)
@@ -195,23 +194,56 @@ and interpret_aexpr ae env = match ae with
 
 and args_bindings params args env = match params, args with
   | [],[] -> env
-  | [],lst
+  | [],lst -> raise WrongNumberOfArguments
   | lst,[] -> raise WrongNumberOfArguments
   | (ph::pt),(ah::at) -> args_bindings pt at (make_binding ph ah env)
 (* apply_closure: closure -> list aexpr -> aexpr *)
-and apply_closure (c:closure) (args:aexpr list) =
-  interpret_aexpr (c.lambda).value (args_bindings c.arguments args (extend_env c.env))
+and apply_closure c args =
+  interpret_expr (c.lambda) (args_bindings c.parameters args (extend_env c.env))
+
 
 (*apply_built_in: Built_In -> list aexpr -> aexpr *)
 and apply_built_in bi args = match bi with
-  | Cons -> apply_2 myCons args
-	| Head -> apply_1 myHead args
-	| Tail -> apply_1 myTail args
-	| Eq ->   appply_2 myEq args
-	| Plus -> apply_2 myPlus args
-	| Minus -> apply_2 myMinus args
-	| Strcomp -> apply_2 myStrcomp args
-	| Strapp ->  apply_2 myStrapp args
+  | Cons -> (match args with
+              | [a1; a2] -> (match a1, a2 with
+                              | String(s),Set(wl) -> myCons s wl
+                              | _ -> raise WrongType )
+              | _ -> raise WrongNumberOfArguments)
+	| Head -> (match args with
+              | [a1] -> (match a1 with
+                          | Set(s) -> myHead s
+                          | _ -> raise WrongType)
+              | _    -> raise WrongNumberOfArguments)
+	| Tail -> (match args with
+              | [a1] -> (match a1 with
+                          | Set(s) -> myTail s
+                          | _ -> raise WrongType)
+              | _    -> raise WrongNumberOfArguments)
+	| Eq ->   (match args with
+              | [a1; a2] -> (match a1, a2 with
+                              | Int(i1),Int(i2) -> Bool (myEq i1 i2)
+                              | _ -> raise WrongType )
+              | _ -> raise WrongNumberOfArguments)
+	| Plus -> (match args with
+              | [a1; a2] -> (match a1, a2 with
+                              | Int(i1),Int(i2) -> myPlus i1 i2
+                              | _ -> raise WrongType )
+              | _ -> raise WrongNumberOfArguments)
+	| Minus -> (match args with
+              | [a1; a2] -> (match a1, a2 with
+                              | Int(i1),Int(i2) -> myMinus i1 i2
+                              | _ -> raise WrongType )
+              | _ -> raise WrongNumberOfArguments)
+	| Strcomp -> (match args with
+              | [a1; a2] -> (match a1, a2 with
+                              | String(s1),String(s2) -> myStrcomp s1 s2
+                              | _ -> raise WrongType )
+              | _ -> raise WrongNumberOfArguments)
+	| Strapp ->  (match args with
+              | [a1; a2] -> (match a1, a2 with
+                              | Word(w1),String(w2) -> Word(myStrapp w1 w2)
+                              | _ -> raise WrongType )
+              | _ -> raise WrongNumberOfArguments)
 ;;
 (* END Interpreter *)
 

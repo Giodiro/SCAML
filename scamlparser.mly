@@ -22,7 +22,7 @@
 %type <Ast.top_level list> main
 %%
 main:
- | EOF   				      { [] }
+ | EOF   				{ [] }
  | top_level main 		{ $1::$2 }
 ;
 top_level:
