@@ -266,7 +266,7 @@ let yyact = [|
     let _1 = (Parsing.peek_val __caml_parser_env 1 : 'expr) in
     Obj.repr(
 # 30 "scamlparser.mly"
-                 ( Expression _1 )
+                 ( print_endline "expr"; Expression _1 )
 # 271 "scamlparser.ml"
                : 'top_level))
 ; (fun __caml_parser_env ->
@@ -373,7 +373,7 @@ let yyact = [|
     let _2 = (Parsing.peek_val __caml_parser_env 1 : 'word_list) in
     Obj.repr(
 # 61 "scamlparser.mly"
-                      ( Set(_2) )
+                      ( print_endline "detected set"; Set(_2) )
 # 378 "scamlparser.ml"
                : 'aexpr))
 ; (fun __caml_parser_env ->
@@ -469,7 +469,7 @@ let yyact = [|
 ; (fun __caml_parser_env ->
     Obj.repr(
 # 85 "scamlparser.mly"
-                   ( [] )
+          ( [] )
 # 474 "scamlparser.ml"
                : 'word_list))
 ; (fun __caml_parser_env ->
@@ -484,7 +484,7 @@ let yyact = [|
     let _1 = (Parsing.peek_val __caml_parser_env 0 : string) in
     Obj.repr(
 # 90 "scamlparser.mly"
-              ( Non_Empty_Word(_1) )
+              ( print_endline "word"; Non_Empty_Word(_1) )
 # 489 "scamlparser.ml"
                : 'word))
 ; (fun __caml_parser_env ->

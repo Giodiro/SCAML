@@ -27,7 +27,7 @@ main:
 ;
 top_level:
  | glob_def						{ Definition $1 }
- | expr END						{ Expression $1 }
+ | expr END						{ print_endline "expr"; Expression $1 }
 ;
 
 arg_list:
@@ -58,7 +58,7 @@ expr:
 aexpr:
  | LP expr RP 					{ Expr($2) }
  | VAR 							{ Var($1) }
- | LB word_list RB				{ Set($2) }
+ | LB word_list RB				{ print_endline "detected set"; Set($2) }
  | INT 							{ Int($1) }
  | STRING 						{ String($1) }
  | CONS 						{ Built_In (Cons) }
@@ -82,11 +82,11 @@ non_empty_list_aexpr:
 ;
 
 word_list:
- | /* empty */					{ [] }
+ | 							{ [] }
  | word_list COMMA word   		{ $3::$1 }
 ;
 
 word:
- | WORD 						{ Non_Empty_Word($1) }
+ | WORD 						{ print_endline "word"; Non_Empty_Word($1) }
  | EMPTY_WORD 					{ Empty_Word }
 ;

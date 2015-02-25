@@ -84,6 +84,10 @@ let myStrapp w str = match w with
   | Empty_Word -> Non_Empty_Word str
   | Non_Empty_Word w -> Non_Empty_Word (w ^ str)
 ;;
+let myInt_to_int i = match i with
+  | Int(x) -> x
+  | _ -> raise WrongType
+
 (* 
   see http://caml.inria.fr/pub/docs/manual-caml-light/node14.17.html for compare_strings.
   Returns 0 if s1 and s2 are equal (or one is prefix of the other),
@@ -93,8 +97,27 @@ let myStrapp w str = match w with
 *)
 let myStrcomp str1 str2 =
   match compare str1 str2 with
-   | 0 | 2 | -2 -> Int(0)
-   | _   as x   -> Int(x)
+   | 0 | 2 | -2 -> 0
+   | _   as x   -> x
+;;
+
+let myWordcomp w1 w2 = match w1, w2 with
+  | Empty_Word, Empty_Word -> 0
+  | Empty_Word, _ -> -1
+  | _, Empty_Word -> 1
+  | (Non_Empty_Word new1), (Non_Empty_Word new2) -> myStrcomp new1 new2 
+;;
+
+let mySetEq s1 s2 = 
+  let rec mySetEqHelper s1 s2 = match s1, s2 with
+    | [], [] -> T 
+    | [], _ -> F
+    | _, [] -> F
+    | (h1::t1), (h2::t2) -> if (myWordcomp h1 h2) = 0  
+                            then mySetEqHelper t1 t2
+                            else F 
+  in mySetEqHelper (List.sort myWordcomp s1)
+                   (List.sort myWordcomp s2)
 ;;
 
 (* END Built in functions *)
@@ -108,15 +131,16 @@ let print_aexpr ae = match ae with
       | h::t -> (match h with
                 | Non_Empty_Word(w) -> print_string w; print_string ", "
                 | Empty_Word        -> print_string ":"; print_string ", ")
-    in (print_string "{ "; print_set wl))
-  | Int(i) -> print_int i
-  | (Word w) -> (match w with
+    in (print_string "{ "; print_set wl; flush_all ()))
+  | Int(i) -> print_endline (string_of_int i)
+  | (Word w) -> ((match w with
                 | Non_Empty_Word(wo) -> print_string wo; print_string ", "
-                | Empty_Word        -> print_string ":"; print_string ", ")
+                | Empty_Word        -> print_string ":"; print_string ", ");
+                flush_all ())
   | (Bool b) -> (match b with
-                | T -> print_string "True "
-                | F -> print_string "False ")
-  | String (s) -> print_string s
+                | T -> print_endline "True "
+                | F -> print_endline "False ")
+  | String (s) -> print_endline s
   | _ -> raise NotApplicable
 ;;
 
@@ -150,7 +174,8 @@ and interpret_tl_list tl_list env =
    | h::t -> 
     (match h with
      | Definition (d) -> interpret_tl_list t (interpret_global_def d env)
-     | Expression (e) -> print_aexpr (interpret_expr e env);
+     | Expression (e) -> print_endline "Detected expr";
+                         print_aexpr (interpret_expr e env);
                          interpret_tl_list t env
     )		
 (* interpret_global_def: global_def -> environment -> environment *)
@@ -222,6 +247,7 @@ and apply_built_in bi args = match bi with
 	| Eq ->   (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1),Int(i2) -> Bool (myEq i1 i2)
+                              | Set(s1),Set(s2) -> Bool (mySetEq s1 s2) 
                               | _ -> raise WrongType )
               | _ -> raise WrongNumberOfArguments)
 	| Plus -> (match args with
@@ -236,7 +262,7 @@ and apply_built_in bi args = match bi with
               | _ -> raise WrongNumberOfArguments)
 	| Strcomp -> (match args with
               | [a1; a2] -> (match a1, a2 with
-                              | String(s1),String(s2) -> myStrcomp s1 s2
+                              | String(s1),String(s2) -> Int (myStrcomp s1 s2)
                               | _ -> raise WrongType )
               | _ -> raise WrongNumberOfArguments)
 	| Strapp ->  (match args with
@@ -255,7 +281,8 @@ let main () =
 	in
 	let lexbuf = Lexing.from_channel cin in
 		let result = Scamlparser.main Scamllexer.main lexbuf
-		in interpret result
+		in (print_endline "in interpreter";
+        interpret result)
 ;;
 
 let _ = Printexc.print main ()

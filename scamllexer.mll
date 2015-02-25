@@ -3,6 +3,7 @@
 open Scamlparser        (* The type token is defined in parser.mli *)
 open Printf
 open Ast
+exception Eof
 
 let create_hashtable size init =
 	let tbl = Hashtbl.create size in
@@ -36,18 +37,17 @@ let digit = ['0'-'9']
 let alpha = ['a'-'z']+
 
 rule main = parse
-      [' ' '\t']     
-    | ['\n' ]  		 { main lexbuf }
+      [' ' '\t' '\n'] { main lexbuf }
     | digit+ as lxm  { printf "digit %s\n" lxm; INT(int_of_string lxm) }
-    | '"' ((['a'-'z' ' ']* ':') as str) '"'  { printf "string %s\n" str; STRING str}
+    | '"' ((['a'-'z']*|'&' ) as str) '"'  { printf "string %s\n" str; STRING str}
     | alpha as var	 
     	{ try
     		let token= Hashtbl.find keyword_table var in
     		printf "token %s\n" var;token 
-    	  with Not_found -> 
+    	  with Not_found ->                        
     	   	printf "Var %s\n" var; VAR var }	
     | "=="		     {printf "eq\n" ; EQ }
-    | ':'			 { printf "typeof\n" ; TYPEOF }
+    | ':'			 {printf "typeof\n" ; TYPEOF }
     | '='			 {printf "ass\n"; ASS }
     | '+'			 {printf "plus \n"; PLUS }
     | '-'			 {printf "min\n"; MINUS }
@@ -55,11 +55,26 @@ rule main = parse
     | ')' 			 {printf "rp\n"; RP }
     | '{'			 { printf "lb\n" ; set lexbuf; LB}
     | ";;" 			 { printf "end\n" ; END }
-    | eof 			 { printf "eof\n"; EOF }
+    | eof 			 { printf "eof\n"; EOF; }
 and set = parse
-	  [' ' '\t']
-    | ['\n' ]  		 { set lexbuf }
+	  [' ' '\t' '\n'] 	 { set lexbuf }
 	| alpha as w 	 { printf "word %s\n" w; set lexbuf; WORD w }
 	| ','         	 { printf "commma\n"; set lexbuf; COMMA }
 	| ':'			 { printf "empty\n"; set lexbuf; EMPTY_WORD }
 	| '}'			 { printf "rb\n"; main lexbuf; RB }
+
+{
+let main2 () =
+	let cin =
+		if Array.length Sys.argv > 1
+		then open_in Sys.argv.(1)
+		else stdin
+	in
+	try
+		let lexbuf = Lexing.from_channel cin in
+			main lexbuf
+	with Eof -> print_endline "Eof"; EOF
+;;
+
+let _ = Printexc.print main2 ()
+}
