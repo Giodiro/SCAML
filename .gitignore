@@ -2,3 +2,6 @@
 build.txt
 *.cmi
 main.mli
+scamllexer.ml
+scamlparser.ml
+scamlparser.mli
