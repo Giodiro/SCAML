@@ -8,12 +8,12 @@ open Printf
 (* exception TailOfEmptySet of string*)
 (* exception NotApplicable of string*)
 (* exception WrongNumberOfArguments of string*)
-exception Unbound
+exception Unbound of string (* the variable that is unbound *)
 exception HeadOfEmptySet
 exception TailOfEmptySet
 exception NotApplicable
-exception WrongNumberOfArguments
-exception WrongType
+exception WrongNumberOfArguments of int * int (* expected number of args * actual number of args *)
+exception WrongType of myType (* expected_type * actual_type *)
 
 (* SECTION Environment helpers *)
  
@@ -21,7 +21,7 @@ exception WrongType
 let rec lookup name env =
  let rec lookup_frame name fr =
  	match fr with
- 	 | [] -> raise Unbound
+ 	 | [] -> raise (Unbound name)
  	 | h::tail -> (match h.name_type with
                   | Binding(n, t) -> if n = name 
                                    then h.value 
@@ -30,7 +30,7 @@ let rec lookup name env =
   (match env with
  	 | Global_env(f) -> lookup_frame name f
  	 | Whatever(f,e) -> try lookup_frame name f
-                      with Unbound -> lookup name e))
+                      with Unbound(x) -> lookup name e))
 ;;
 
 (* make_binding: def -> aexpr -> environment -> environment *)
@@ -145,6 +145,12 @@ let print_aexpr ae = match ae with
   | _ -> raise NotApplicable
 ;;
 
+let string_of_type t = match t with
+  | Int_type -> "int"
+  | String_type -> "string"
+  | Set_type -> "set"
+  | Bool_type -> "bool"
+
 (* myBool_to_bool: myBool -> bool *)
 let myBool_to_bool mBool = match mBool with
   | T -> true
@@ -195,7 +201,7 @@ and interpret_expr e env = match e with
         match guard' with
          | Bool(b) -> if myBool_to_bool b then interpret_expr consequent env
                                           else interpret_expr alternate env
-         | _       -> raise WrongType)
+         | _       -> raise (WrongType Bool_type))
 	| Application(e, exprList) -> let func = (interpret_expr e env) in
                                  let rec eval_args elist = match elist with (* Evaluates all arguments *)
                                   | [] -> []
@@ -213,8 +219,8 @@ and interpret_aexpr ae env = match ae with
 
 and args_bindings params args env = match params, args with
   | [],[] -> env
-  | [],lst -> raise WrongNumberOfArguments
-  | lst,[] -> raise WrongNumberOfArguments
+  | [],lst -> raise (WrongNumberOfArguments ((List.length params),(List.length args)))
+  | lst,[] -> raise (WrongNumberOfArguments ((List.length params),(List.length args)))
   | (ph::pt),(ah::at) -> args_bindings pt at (make_binding ph ah env)
 (* apply_closure: closure -> list aexpr -> aexpr *)
 and apply_closure c args =
@@ -226,35 +232,38 @@ and apply_built_in bi args = match bi with
   | Cons -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Word(w),Set(wl) -> (print_endline "cons";myCons w wl)
-                              | _ -> raise WrongType )
-              | _ -> raise WrongNumberOfArguments)
+                              | _ -> raise (WrongType String_type))
+              | _ -> raise (WrongNumberOfArguments (2, (List.length args))))
 	| Head -> (match args with
               | [a1] -> (match a1 with
                           | Set(s) -> (print_endline "head"; myHead s)
-                          | _ -> raise WrongType)
-              | _    -> raise WrongNumberOfArguments)
+                          | _ -> raise (WrongType Set_type))
+              | _    -> raise (WrongNumberOfArguments (1,(List.length args))))
 	| Tail -> (match args with
               | [a1] -> (match a1 with
                           | Set(s) -> (print_endline "tail"; myTail s)
-                          | _ -> raise WrongType)
-              | _    -> raise WrongNumberOfArguments)
+                          | _ -> raise (WrongType Set_type))
+              | _    -> raise (WrongNumberOfArguments (1,(List.length args))))
 	| Eq ->   (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1),Int(i2) -> (print_endline "eq int"; myEq i1 i2)
                               | Set(s1),Set(s2) -> (print_endline "eq set"; Bool (mySetEq s1 s2))
                               | Word(w1),Word(w2) -> (print_endline "eq string"; Bool (if (myWordcomp w1 w2) = 0 then T else F))
-                              | _ -> (print_endline "eq wrong"; raise WrongType ))
-              | _ -> raise WrongNumberOfArguments)
+                              | Int(x),_ -> raise (WrongType Int_type)
+                              | Set(x),_ -> raise (WrongType Set_type)
+                              | Word(x),_ -> raise (WrongType String_type)
+                              | _ -> raise (WrongType Int_type)) (*Whatever*)
+              | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
 	| Plus -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1),Int(i2) -> (print_endline "plus"; myPlus i1 i2)
-                              | _ -> raise WrongType )
-              | _ -> raise WrongNumberOfArguments)
+                              | _ -> raise (WrongType Int_type))
+              | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
 	| Minus -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1),Int(i2) -> (print_endline "minus"; myMinus i1 i2);
-                              | _ -> raise WrongType )
-              | _ -> raise WrongNumberOfArguments)
+                              | _ -> raise (WrongType Int_type))
+              | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
 	(*| Strcomp -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | String(s1),String(s2) -> Int (myStrcomp s1 s2)
@@ -263,10 +272,23 @@ and apply_built_in bi args = match bi with
 	| Strapp ->  (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Word(w1),Word(w2) -> (print_endline "strapp"; Word(myStrapp w1 w2))
-                              | _ -> raise WrongType )
-              | _ -> raise WrongNumberOfArguments)
+                              | _ -> raise (WrongType String_type))
+              | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
 ;;
 (* END Interpreter *)
+exception Error of int * int * string
+
+ let parse_buf_exn lexbuf =
+    try
+      Scamlparser.main Scamllexer.main lexbuf
+    with Parsing.Parse_error ->
+      begin
+        let curr = lexbuf.Lexing.lex_curr_p in
+        let line = curr.Lexing.pos_lnum in
+        let cnum = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
+        let tok = Lexing.lexeme lexbuf in
+        raise (Error (line,cnum,tok))
+      end
 
 let main () =
 	let cin =
@@ -275,9 +297,23 @@ let main () =
 		else stdin
 	in
 	let lexbuf = Lexing.from_channel cin in
-		let result = Scamlparser.main Scamllexer.main lexbuf
-		in (print_endline "in interpreter";
-        interpret result)
+    try
+      let result = parse_buf_exn lexbuf
+      in (print_endline "in interpreter";
+          interpret result)
+    with Error (lnum, cnum, token) -> (print_string "Parse error on line ";
+                                        print_int lnum; print_string " char:";
+                                        print_int cnum; print_string " while reading token ";
+                                        print_string token)
+        | (Scamllexer.Syntax_error msg) -> print_endline msg
+        | WrongType (t)  -> (print_string "Interpreter error: expected type ";
+                             print_string (string_of_type t))
+        | WrongNumberOfArguments (ex,ac) -> (print_string "Interpreter error: expected ";
+                                             print_int ex; print_string " arguments. ";
+                                             print_string "The function is not applicable to ";
+                                             print_int ac; print_string " arguments.")
+        | Unbound (s) -> (print_string "Interpreter error: variable ";
+                          print_string s; print_string " is not bound.";)
 ;;
 
 let _ = Printexc.print main ()
