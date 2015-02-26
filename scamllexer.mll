@@ -5,6 +5,16 @@ open Printf
 open Ast
 exception Eof
 
+let line_num = ref 1
+
+exception Syntax_error of string
+
+let syntax_error lnum cnum msg tok = raise (Syntax_error 
+   (msg ^ " on line: " ^ 
+   (string_of_int lnum) ^
+   " char: " ^ (string_of_int cnum) ^
+   " while reading token " ^ tok))
+
 let create_hashtable size init =
 	let tbl = Hashtbl.create size in
 		List.iter (fun (key, data) -> Hashtbl.add tbl key data) init;
@@ -39,28 +49,34 @@ let digit = ['0'-'9']
 let alpha = ['a'-'z']+
 
 rule main = parse
-      [' ' '\t' '\n'] { main lexbuf }
-    | digit+ as lxm  { printf "digit %s\n" lxm; INT(int_of_string lxm) }
-    | '"' ((['a'-'z']+ ) as str) '"'  { printf "string %s\n" str; WORD str}
-    | '"' ':' '"'   {printf "empty string"; EMPTY_WORD}
+      [' ' '\t'] { main lexbuf }
+    | ['\n']     { Lexing.new_line lexbuf; main lexbuf }
+    | digit+ as lxm  {  INT(int_of_string lxm) }
+    | '"' ((['a'-'z']+ ) as str) '"'  {  WORD str}
+    | '"' ':' '"'   { EMPTY_WORD}
     | alpha as var	 
     	{ try
     		let token= Hashtbl.find keyword_table var in
-    		printf "token %s\n" var;token 
+    		token 
     	  with Not_found ->                        
-    	   	printf "Var %s\n" var; VAR var }	
-    | "=="		     {printf "eq\n" ; EQ }
-    | ':'			 {printf "typeof\n" ; TYPEOF }
-    | '='			 {printf "ass\n"; ASS }
-    | ','       {printf "comma\n"; COMMA}
-    | '+'			 {printf "plus \n"; PLUS }
-    | '-'			 {printf "min\n"; MINUS }
-    | '('			 {printf "lp\n"; LP }
-    | ')' 			 {printf "rp\n"; RP }
-    | '{'			 { printf "lb\n" ; LB}
-    | '}'      {printf "rb\n" ; RB}
-    | ";;" 			 { printf "end\n" ; END }
-    | eof 			 { printf "eof\n"; EOF; }
+    	   	 VAR var }	
+    | "=="		     { EQ }
+    | ':'			 { TYPEOF }
+    | '='			 { ASS }
+    | ','       { COMMA}
+    | '+'			 { PLUS }
+    | '-'			 { MINUS }
+    | '('			 { LP }
+    | ')' 			 { RP }
+    | '{'			 {  LB}
+    | '}'      { RB}
+    | ";;" 			 {  END }
+    | _         { let curr = lexbuf.Lexing.lex_curr_p in
+                    syntax_error curr.Lexing.pos_lnum
+                                 (curr.Lexing.pos_cnum - curr.Lexing.pos_bol)
+                                 "Syntax error" 
+                                 (Lexing.lexeme lexbuf)}
+    | eof 			 { EOF }
 (*
 {
 let main2 () =

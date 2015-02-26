@@ -22,17 +22,13 @@
 %type <Ast.top_level list> main
 %%
 main:
- | EOF   				{ [] }
+ | EOF   				      { [] }
  | top_level main 		{ $1::$2 }
 ;
 top_level:
  | glob_def						{ Definition $1 }
  | expr END						{ print_endline "expr"; Expression $1 }
 ;
-
-arg_list:
- | /* empty */					{ [] }
- | VAR TYPEOF TYPE arg_list { Binding($1, $3) :: $4}
 
 glob_def:
  | LET VAR LP arg_list RP TYPEOF TYPE ASS expr END	
@@ -49,16 +45,16 @@ local_def:
 ;
 
 expr:
- | aexpr 						{ Atomic_expr $1 }
- | local_def 					{ Local_def $1 }
- | IF expr THEN expr ELSE expr { If($2, $4, $6) }
- | LP expr list_expr RP 		{ Application($2, $3) }
+ | aexpr 						            { Atomic_expr $1 }
+ | local_def 					          { Local_def $1 }
+ | IF expr THEN expr ELSE expr  { If($2, $4, $6) }
+ | LP expr list_expr RP 		    { Application($2, $3) }
 ;
 
 aexpr:
- | LP expr RP 					{ Expr($2) }
+ | LP expr RP 			{ Expr($2) }
  | VAR 							{ Var($1) }
- | LB word_list RB				{ print_endline "detected set"; Set($2) }
+ | LB word_list RB  { Set($2) }
  | INT 							{ Int($1) }
  | WORD 						{ Word (Non_Empty_Word($1)) }
  | EMPTY_WORD       { Word Empty_Word }
@@ -67,30 +63,35 @@ aexpr:
  | CONS 						{ Built_In (Cons) }
  | HEAD							{ Built_In (Head) }
  | TAIL							{ Built_In (Tail) }
- | STRCOMP						{ Built_In (Strcomp) }
+ | STRCOMP					{ Built_In (Strcomp) }
  | STRAPP						{ Built_In (Strapp) }
  | EQ 							{ Built_In (Eq) }
  | PLUS							{ Built_In (Plus) }
  | MINUS						{ Built_In (Minus) }
 ;
 
+arg_list:
+ | /* empty */					    { [] }
+ | VAR TYPEOF TYPE arg_list { Binding($1, $3) :: $4}
+;
+
 list_expr:
- | LP RP						{ [] }
+ | LP RP						      { [] }
  | non_empty_list_expr 		{ $1 }
 ;
 
 non_empty_list_expr:
- | expr 						        { [$1] }
+ | expr 						          { [$1] }
  | expr non_empty_list_expr 	{ $1::$2 }
 ;
 
 word_list:
- | /* empty */  { [] }
- | word         { [$1] }
+ | /* empty */          { [] }
+ | word                 { [$1] }
  | word COMMA word_list { $1::$3}
 ;
 
 word:
- | WORD 						{ print_endline "word"; Non_Empty_Word($1) }
- | EMPTY_WORD 					{ Empty_Word }
+ | WORD 						{ Non_Empty_Word($1) }
+ | EMPTY_WORD 			{ Empty_Word }
 ;
