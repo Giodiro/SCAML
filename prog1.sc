@@ -1,2 +1,8 @@
-let factorial (x:int):int = 
-	if (== x 1) then 1 else (+ x (factorial (- x 1)));;
+let inputset:set = { "pawel", "lol", "looool" };;
+let postfixwith:string = "hello";;
+
+let postfix (iset:set appstr:string):set =
+	if (== iset {}) then {}
+	else (cons (strapp (head iset) appstr) (postfix (tail iset) appstr))
+;;
+(postfix inputset postfixwith);;
