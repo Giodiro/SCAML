@@ -126,9 +126,11 @@ let print_aexpr ae = match ae with
   | (Set wl) -> (
     let rec print_set s = match s with
       | [] -> print_string "}"
-      | h::t -> ((match h with
-                | Non_Empty_Word(w) -> print_string w; print_string ", "
-                | Empty_Word        -> print_string ":"; print_string ", ");
+      | h::t -> ((match h, t with
+                | Non_Empty_Word(w), [] -> print_string w; print_string " "
+                | Non_Empty_Word(w), _ -> print_string w; print_string ", "
+                | Empty_Word, []       -> print_string ":"; print_string " "
+                | Empty_Word, _       -> print_string ":"; print_string ", ");
                 print_set t)
     in (print_string "{ "; print_set wl; print_string "\n"; flush_all ()))
   | (Int i) -> print_endline (string_of_int i)
