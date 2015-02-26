@@ -240,7 +240,7 @@ and apply_built_in bi args = match bi with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1),Int(i2) -> (print_endline "eq int"; myEq i1 i2)
                               | Set(s1),Set(s2) -> (print_endline "eq set"; Bool (mySetEq s1 s2))
-                              | _ -> (print_endline "eq wrong"; print_aexpr a1; raise WrongType ))
+                              | _ -> (print_endline "eq wrong"; raise WrongType ))
               | _ -> raise WrongNumberOfArguments)
 	| Plus -> (match args with
               | [a1; a2] -> (match a1, a2 with

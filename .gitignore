@@ -1,7 +1,6 @@
 *.cmo
 build.txt
 *.cmi
-main.mli
+*.mli
 scamllexer.ml
 scamlparser.ml
-scamlparser.mli
