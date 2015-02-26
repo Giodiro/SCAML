@@ -6,7 +6,6 @@ type myType =
 	| String_type
 	| Set_type
 	| Bool_type
-	| Word_type		(*we use the other types so to specify types of variables but never say a word is of type word -> do we need it*)
   
 type word = 
 	| Non_Empty_Word of string
@@ -37,17 +36,16 @@ and local_def =
 and expr = 
  	| Atomic_expr of aexpr 
  	| Local_def of local_def
- 	| If of aexpr * aexpr * aexpr
- 	| Application of expr * (aexpr list)
+ 	| If of expr * expr * expr
+ 	| Application of expr * (expr list)
 and aexpr = 
 	| Expr of expr
   | Closure of closure  (* This type is only visible to the interpreter *)
 	| Var of string 
 	| Set of word list 
-	| Int of int 
-  | Word of word
+	| Int of int
   | Bool of myBool
-	| String of string
+	| Word of word
 	| Built_In of built_in 
 and environment =
  | Global_env of binding list

@@ -1,5 +1,6 @@
 open Ast
 open String
+open Printf
 
 (* TODO: parametrize these exceptions *)
 (* exception Unbound of string*)
@@ -25,16 +26,18 @@ let rec lookup name env =
                   | Binding(n, t) -> if n = name 
                                    then h.value 
                                    else lookup_frame name tail)
- in match env with
+ in (printf "looking up %s\n" name;
+  (match env with
  	 | Global_env(f) -> lookup_frame name f
  	 | Whatever(f,e) -> try lookup_frame name f
-                      with Unbound -> lookup name e
+                      with Unbound -> lookup name e))
 ;;
 
 (* make_binding: def -> aexpr -> environment -> environment *)
 let make_binding name valu env = match env with
   | Global_env(e) -> let nBind = {name_type = name; value = valu} in
-                       (Global_env (nBind::e))
+                       (printf "extending global environment with %s\n" (match name with Binding (n,t) -> n);
+                       (Global_env (nBind::e)))
   | Whatever (fr, rest) -> let nBind = {name_type = name; value = valu} in
                        (Whatever (nBind::fr, rest))    (* cons the new binding to the beginning of the frame *)
 ;;
@@ -48,52 +51,44 @@ let extend_env env = match env with
 
 (* SECTION Built in functions *)
 
-(* myCons: String_type -> Set_type -> Set_type *)
-(* myCons: string -> list word -> list word *)
-let myCons str aSet =
-  let str_to_word str = if str = ":" then Empty_Word else Non_Empty_Word(str)
-  in Set((str_to_word str)::aSet)
-;;
+(* myCons: word -> list word -> aexpr (Set) *)
+let myCons str aSet = Set(str::aSet)
 
-(* myHead: Set_type -> Word_type *)
-(* myHead: list word -> word *)
+(* myHead: list word -> aexpr (Word) *)
 let myHead aSet = match aSet with
   | [] -> raise HeadOfEmptySet
   | h::t -> Word(h)
 ;;
 
-(* myTail: Set_type -> Set_type *)
-(* myTail: list word -> list word *)
+(* myTail: list word -> aexpr (Set) *)
 let myTail aSet = match aSet with
   | [] -> raise TailOfEmptySet
   | h::t -> Set(t)
 ;;
 
-(* myEq: Int_type -> Int_type -> Bool_type *)
-(* myEq: int -> int -> myBool *)
-let myEq i1 i2 = if i1 = i2 then T else F;;
+(* myEq: int -> int -> aexpr (Bool) *)
+let myEq i1 i2 = if i1 = i2 then Bool (T) else Bool (F);;
 
-(* myPlus: Int_type -> Int_type -> Int_type *)
-(* myPlus: int -> int -> int *)
+(* myPlus: int -> int -> aexpr (Int) *)
 let myPlus i1 i2 = Int(i1+i2);;
 
+(* myMinus: int -> int -> aexpr (Int) *)
 let myMinus i1 i2 = Int(i1-i2);;
 
-(* myStrapp: word -> string -> word *)
-let myStrapp w str = match w with
-  | Empty_Word -> Non_Empty_Word str
-  | Non_Empty_Word w -> Non_Empty_Word (w ^ str)
+(* myStrapp: word -> word -> word *)
+let myStrapp w1 w2 = match w1,w2 with
+  | Empty_Word, Empty_Word -> Empty_Word
+  | (Non_Empty_Word x1), Empty_Word -> w1
+  | Empty_Word, (Non_Empty_Word x2) -> w2
+  | (Non_Empty_Word x1), (Non_Empty_Word x2) -> Non_Empty_Word (x1 ^ x2)
 ;;
-let myInt_to_int i = match i with
-  | Int(x) -> x
-  | _ -> raise WrongType
 
 (* 
   see http://caml.inria.fr/pub/docs/manual-caml-light/node14.17.html for compare_strings.
   Returns 0 if s1 and s2 are equal (or one is prefix of the other),
   -1 if str1 is lexicographically before str2,
   1 if str2 is lexicographically before str1
-  myStrcomp: string -> string -> Int
+  myStrcomp: string -> string -> int
 *)
 let myStrcomp str1 str2 =
   match compare str1 str2 with
@@ -101,6 +96,7 @@ let myStrcomp str1 str2 =
    | _   as x   -> x
 ;;
 
+(* myWordcomp: word -> word -> int *)
 let myWordcomp w1 w2 = match w1, w2 with
   | Empty_Word, Empty_Word -> 0
   | Empty_Word, _ -> -1
@@ -108,6 +104,7 @@ let myWordcomp w1 w2 = match w1, w2 with
   | (Non_Empty_Word new1), (Non_Empty_Word new2) -> myStrcomp new1 new2 
 ;;
 
+(* mySetEq: word list -> word list -> myBool *)
 let mySetEq s1 s2 = 
   let rec mySetEqHelper s1 s2 = match s1, s2 with
     | [], [] -> T 
@@ -124,15 +121,16 @@ let mySetEq s1 s2 =
 
 (* SECTION Helper functions *)
 
+(* print_aexpr: aexpr -> unit *)
 let print_aexpr ae = match ae with
-  | Set(wl) -> (
+  | (Set wl) -> (
     let rec print_set s = match s with
       | [] -> print_string "}"
       | h::t -> (match h with
                 | Non_Empty_Word(w) -> print_string w; print_string ", "
                 | Empty_Word        -> print_string ":"; print_string ", ")
     in (print_string "{ "; print_set wl; flush_all ()))
-  | Int(i) -> print_endline (string_of_int i)
+  | (Int i) -> print_endline (string_of_int i)
   | (Word w) -> ((match w with
                 | Non_Empty_Word(wo) -> print_string wo; print_string ", "
                 | Empty_Word        -> print_string ":"; print_string ", ");
@@ -140,25 +138,14 @@ let print_aexpr ae = match ae with
   | (Bool b) -> (match b with
                 | T -> print_endline "True "
                 | F -> print_endline "False ")
-  | String (s) -> print_endline s
+  (*| (String s) -> print_endline s*)
   | _ -> raise NotApplicable
 ;;
 
+(* myBool_to_bool: myBool -> bool *)
 let myBool_to_bool mBool = match mBool with
   | T -> true
   | F -> false
-;;
-(*
-let apply_2 func args =
-  match args with
-    [a1; a2] -> func a1 a2
-   | _  	   -> raise WrongNumberOfArguments
-;;*)
-
-let apply_1 func args = 
-  match args with
-   | [a1] -> func a1
-   | _    -> raise WrongNumberOfArguments
 ;;
 
 (* END Helper functions *)
@@ -173,14 +160,16 @@ and interpret_tl_list tl_list env =
    | [] -> ()
    | h::t -> 
     (match h with
-     | Definition (d) -> interpret_tl_list t (interpret_global_def d env)
+     | Definition (d) -> print_endline "Detected def";
+                         interpret_tl_list t (interpret_global_def d env)
      | Expression (e) -> print_endline "Detected expr";
                          print_aexpr (interpret_expr e env);
                          interpret_tl_list t env
     )		
 (* interpret_global_def: global_def -> environment -> environment *)
 and interpret_global_def gd envi = match gd with
-	| Func_Glob_Binding (def,args,e) -> make_binding def (Closure { parameters = args; env = envi; lambda = e; }) envi
+	| Func_Glob_Binding (def,args,e) -> 
+                                      make_binding def (Closure { parameters = args; env = envi; lambda = e; }) envi
 	| Var_Glob_Binding (def,e)       -> make_binding def (interpret_expr e envi) envi
 
 (* interpret_local_def: local_def -> environment -> aexpr *)
@@ -197,15 +186,15 @@ and interpret_expr e env = match e with
 	| Atomic_expr(ae) -> interpret_aexpr ae env
 	| Local_def (ld) -> interpret_local_def ld env
 	| If(guard, consequent, alternate) -> 
-      (let guard' = interpret_aexpr guard env in
+      (let guard' = interpret_expr guard env in
         match guard' with
-         | Bool(b) -> if myBool_to_bool b then interpret_aexpr consequent env
-                                          else interpret_aexpr alternate env
+         | Bool(b) -> if myBool_to_bool b then interpret_expr consequent env
+                                          else interpret_expr alternate env
          | _       -> raise WrongType)
 	| Application(e, exprList) -> let func = (interpret_expr e env) in
                                  let rec eval_args elist = match elist with (* Evaluates all arguments *)
                                   | [] -> []
-                                  | h::t -> (interpret_aexpr h env)::(eval_args t)
+                                  | h::t -> (interpret_expr h env)::(eval_args t)
                                  in match func with
                                   | Closure(c)   -> apply_closure c (eval_args exprList)
                                   | Built_In(bi) -> apply_built_in bi (eval_args exprList)
@@ -231,7 +220,7 @@ and apply_closure c args =
 and apply_built_in bi args = match bi with
   | Cons -> (match args with
               | [a1; a2] -> (match a1, a2 with
-                              | String(s),Set(wl) -> myCons s wl
+                              | Word(w),Set(wl) -> myCons w wl
                               | _ -> raise WrongType )
               | _ -> raise WrongNumberOfArguments)
 	| Head -> (match args with
@@ -246,7 +235,7 @@ and apply_built_in bi args = match bi with
               | _    -> raise WrongNumberOfArguments)
 	| Eq ->   (match args with
               | [a1; a2] -> (match a1, a2 with
-                              | Int(i1),Int(i2) -> Bool (myEq i1 i2)
+                              | Int(i1),Int(i2) -> myEq i1 i2
                               | Set(s1),Set(s2) -> Bool (mySetEq s1 s2) 
                               | _ -> raise WrongType )
               | _ -> raise WrongNumberOfArguments)
@@ -260,14 +249,14 @@ and apply_built_in bi args = match bi with
                               | Int(i1),Int(i2) -> myMinus i1 i2
                               | _ -> raise WrongType )
               | _ -> raise WrongNumberOfArguments)
-	| Strcomp -> (match args with
+	(*| Strcomp -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | String(s1),String(s2) -> Int (myStrcomp s1 s2)
                               | _ -> raise WrongType )
-              | _ -> raise WrongNumberOfArguments)
+              | _ -> raise WrongNumberOfArguments)*)
 	| Strapp ->  (match args with
               | [a1; a2] -> (match a1, a2 with
-                              | Word(w1),String(w2) -> Word(myStrapp w1 w2)
+                              | Word(w1),Word(w2) -> Word(myStrapp w1 w2)
                               | _ -> raise WrongType )
               | _ -> raise WrongNumberOfArguments)
 ;;

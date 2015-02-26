@@ -12,8 +12,7 @@
 %token <Ast.myType> TYPE 
 %token <int> INT 
 %token <string> VAR
-%token <string> WORD 
-%token <string> STRING
+%token <string> WORD
 %right IF THEN ELSE
 %left EQ
 %left PLUS MINUS
@@ -51,8 +50,8 @@ local_def:
 expr:
  | aexpr 						{ Atomic_expr $1 }
  | local_def 					{ Local_def $1 }
- | IF aexpr THEN aexpr ELSE aexpr { If($2, $4, $6) }
- | LP expr list_aexpr RP 		{ Application($2, $3) }
+ | IF expr THEN expr ELSE expr { If($2, $4, $6) }
+ | LP expr list_expr RP 		{ Application($2, $3) }
 ;
 
 aexpr:
@@ -60,7 +59,8 @@ aexpr:
  | VAR 							{ Var($1) }
  | LB word_list RB				{ print_endline "detected set"; Set($2) }
  | INT 							{ Int($1) }
- | STRING 						{ String($1) }
+ | WORD 						{ Word (Non_Empty_Word($1)) }
+ | EMPTY_WORD       { Word Empty_Word }
  | CONS 						{ Built_In (Cons) }
  | HEAD							{ Built_In (Head) }
  | TAIL							{ Built_In (Tail) }
@@ -71,19 +71,20 @@ aexpr:
  | MINUS						{ Built_In (Minus) }
 ;
 
-list_aexpr:
+list_expr:
  | LP RP						{ [] }
- | non_empty_list_aexpr 		{ $1 }
+ | non_empty_list_expr 		{ $1 }
 ;
 
-non_empty_list_aexpr:
- | aexpr 						{ [$1] }
- | non_empty_list_aexpr aexpr 	{ $2::$1 }
+non_empty_list_expr:
+ | expr 						        { [$1] }
+ | expr non_empty_list_expr 	{ $1::$2 }
 ;
 
 word_list:
- | 							{ [] }
- | word_list COMMA word   		{ $3::$1 }
+ | /* empty */  { [] }
+ | word         { [$1] }
+ | word COMMA word_list { $1::$3}
 ;
 
 word:

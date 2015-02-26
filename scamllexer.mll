@@ -39,7 +39,8 @@ let alpha = ['a'-'z']+
 rule main = parse
       [' ' '\t' '\n'] { main lexbuf }
     | digit+ as lxm  { printf "digit %s\n" lxm; INT(int_of_string lxm) }
-    | '"' ((['a'-'z']*|'&' ) as str) '"'  { printf "string %s\n" str; STRING str}
+    | '"' ((['a'-'z']+ ) as str) '"'  { printf "string %s\n" str; WORD str}
+    | '"' ':' '"'   {printf "empty string"; EMPTY_WORD}
     | alpha as var	 
     	{ try
     		let token= Hashtbl.find keyword_table var in
@@ -49,20 +50,16 @@ rule main = parse
     | "=="		     {printf "eq\n" ; EQ }
     | ':'			 {printf "typeof\n" ; TYPEOF }
     | '='			 {printf "ass\n"; ASS }
+    | ','       {printf "comma\n"; COMMA}
     | '+'			 {printf "plus \n"; PLUS }
     | '-'			 {printf "min\n"; MINUS }
     | '('			 {printf "lp\n"; LP }
     | ')' 			 {printf "rp\n"; RP }
-    | '{'			 { printf "lb\n" ; set lexbuf; LB}
+    | '{'			 { printf "lb\n" ; LB}
+    | '}'      {printf "rb\n" ; RB}
     | ";;" 			 { printf "end\n" ; END }
     | eof 			 { printf "eof\n"; EOF; }
-and set = parse
-	  [' ' '\t' '\n'] 	 { set lexbuf }
-	| alpha as w 	 { printf "word %s\n" w; set lexbuf; WORD w }
-	| ','         	 { printf "commma\n"; set lexbuf; COMMA }
-	| ':'			 { printf "empty\n"; set lexbuf; EMPTY_WORD }
-	| '}'			 { printf "rb\n"; main lexbuf; RB }
-
+(*
 {
 let main2 () =
 	let cin =
@@ -77,4 +74,4 @@ let main2 () =
 ;;
 
 let _ = Printexc.print main2 ()
-}
+}*)
