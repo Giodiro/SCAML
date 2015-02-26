@@ -8,6 +8,7 @@
 %token EQ PLUS MINUS 
 %token LP RP LB RB
 %token COMMA EMPTY_WORD
+%token FALSE TRUE
 %token EOF
 %token <Ast.myType> TYPE 
 %token <int> INT 
@@ -61,6 +62,8 @@ aexpr:
  | INT 							{ Int($1) }
  | WORD 						{ Word (Non_Empty_Word($1)) }
  | EMPTY_WORD       { Word Empty_Word }
+ | FALSE						{ Bool (F) }
+ | TRUE							{ Bool (T) }
  | CONS 						{ Built_In (Cons) }
  | HEAD							{ Built_In (Head) }
  | TAIL							{ Built_In (Tail) }

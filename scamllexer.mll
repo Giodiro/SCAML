@@ -15,7 +15,7 @@ let create_hashtable size init =
 	| State_set*)
 
 let keyword_table = 
-	create_hashtable 16 [
+	create_hashtable 32 [
 		("if", IF);
 		("then", THEN);
 		("else", ELSE);
@@ -30,6 +30,8 @@ let keyword_table =
 		("string", TYPE(String_type));
 		("int", TYPE(Int_type));
 		("bool", TYPE(Bool_type));
+		("false", FALSE);
+		("true", TRUE);
 	] 
 } 
 
