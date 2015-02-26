@@ -52,7 +52,7 @@ let extend_env env = match env with
 (* SECTION Built in functions *)
 
 (* myCons: word -> list word -> aexpr (Set) *)
-let myCons str aSet = Set(str::aSet)
+let myCons str aSet = if List.mem str aSet then Set(aSet) else Set(str::aSet);;
 
 (* myHead: list word -> aexpr (Word) *)
 let myHead aSet = match aSet with
