@@ -1,19 +1,7 @@
 open Ast
 open String
 open Printf
-
-(* TODO: parametrize these exceptions *)
-(* exception Unbound of string*)
-(* exception HeadOfEmptySet of string*)
-(* exception TailOfEmptySet of string*)
-(* exception NotApplicable of string*)
-(* exception WrongNumberOfArguments of string*)
-exception Unbound of string (* the variable that is unbound *)
-exception HeadOfEmptySet
-exception TailOfEmptySet
-exception NotApplicable
-exception WrongNumberOfArguments of int * int (* expected number of args * actual number of args *)
-exception WrongType of myType (* expected_type * actual_type *)
+open Library
 
 (* SECTION Environment helpers *)
  
@@ -48,76 +36,6 @@ let extend_env env = match env with
   | (Whatever (fr, e)) -> Whatever ([], (Whatever (fr, e)));;
 
 (* END Environment helper *)
-
-(* SECTION Built in functions *)
-
-(* myCons: word -> list word -> aexpr (Set) *)
-let myCons str aSet = if List.mem str aSet then Set(aSet) else Set(str::aSet);;
-
-(* myHead: list word -> aexpr (Word) *)
-let myHead aSet = match aSet with
-  | [] -> raise HeadOfEmptySet
-  | h::t -> Word(h)
-;;
-
-(* myTail: list word -> aexpr (Set) *)
-let myTail aSet = match aSet with
-  | [] -> raise TailOfEmptySet
-  | h::t -> Set(t)
-;;
-
-(* myEq: int -> int -> aexpr (Bool) *)
-let myEq i1 i2 = if i1 = i2 then Bool (T) else Bool (F);;
-
-(* myPlus: int -> int -> aexpr (Int) *)
-let myPlus i1 i2 = Int(i1+i2);;
-
-(* myMinus: int -> int -> aexpr (Int) *)
-let myMinus i1 i2 = Int(i1-i2);;
-
-(* myStrapp: word -> word -> word *)
-let myStrapp w1 w2 = match w1,w2 with
-  | Empty_Word, Empty_Word -> Empty_Word
-  | (Non_Empty_Word x1), Empty_Word -> w1
-  | Empty_Word, (Non_Empty_Word x2) -> w2
-  | (Non_Empty_Word x1), (Non_Empty_Word x2) -> Non_Empty_Word (x1 ^ x2)
-;;
-
-(* 
-  see http://caml.inria.fr/pub/docs/manual-caml-light/node14.17.html for compare_strings.
-  Returns 0 if s1 and s2 are equal (or one is prefix of the other),
-  -1 if str1 is lexicographically before str2,
-  1 if str2 is lexicographically before str1
-  myStrcomp: string -> string -> int
-*)
-let myStrcomp str1 str2 =
-  match compare str1 str2 with
-   | 0 | 2 | -2 -> 0
-   | _   as x   -> x
-;;
-
-(* myWordcomp: word -> word -> int *)
-let myWordcomp w1 w2 = match w1, w2 with
-  | Empty_Word, Empty_Word -> 0
-  | Empty_Word, _ -> -1
-  | _, Empty_Word -> 1
-  | (Non_Empty_Word new1), (Non_Empty_Word new2) -> myStrcomp new1 new2 
-;;
-
-(* mySetEq: word list -> word list -> myBool *)
-let mySetEq s1 s2 = 
-  let rec mySetEqHelper s1 s2 = match s1, s2 with
-    | [], [] -> T 
-    | [], _ -> F
-    | _, [] -> F
-    | (h1::t1), (h2::t2) -> if (myWordcomp h1 h2) = 0  
-                            then mySetEqHelper t1 t2
-                            else F 
-  in mySetEqHelper (List.sort myWordcomp s1)
-                   (List.sort myWordcomp s2)
-;;
-
-(* END Built in functions *)
 
 (* SECTION Helper functions *)
 
@@ -161,7 +79,7 @@ let myBool_to_bool mBool = match mBool with
 
 (* SECTION Interpreter *)
 
-let rec interpret tl_list = interpret_tl_list tl_list (Global_env [])
+let rec interpret tl_list start_env = interpret_tl_list tl_list start_env
   
 (* interpret_tl_list: list top_level -> environment -> () *)
 and interpret_tl_list tl_list env = 
@@ -231,17 +149,17 @@ and apply_closure c args =
 and apply_built_in bi args = match bi with
   | Cons -> (match args with
               | [a1; a2] -> (match a1, a2 with
-                              | Word(w),Set(wl) -> (print_endline "cons";myCons w wl)
+                              | Word(w),Set(wl) -> Set (myCons w wl)
                               | _ -> raise (WrongType String_type))
               | _ -> raise (WrongNumberOfArguments (2, (List.length args))))
 	| Head -> (match args with
               | [a1] -> (match a1 with
-                          | Set(s) -> (print_endline "head"; myHead s)
+                          | Set(s) -> Word (myHead s)
                           | _ -> raise (WrongType Set_type))
               | _    -> raise (WrongNumberOfArguments (1,(List.length args))))
 	| Tail -> (match args with
               | [a1] -> (match a1 with
-                          | Set(s) -> (print_endline "tail"; myTail s)
+                          | Set(s) -> Set (myTail s)
                           | _ -> raise (WrongType Set_type))
               | _    -> raise (WrongNumberOfArguments (1,(List.length args))))
 	| Eq ->   (match args with
@@ -264,43 +182,75 @@ and apply_built_in bi args = match bi with
                               | Int(i1),Int(i2) -> (print_endline "minus"; myMinus i1 i2);
                               | _ -> raise (WrongType Int_type))
               | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
-	(*| Strcomp -> (match args with
+	| Strcomp -> (match args with
               | [a1; a2] -> (match a1, a2 with
-                              | String(s1),String(s2) -> Int (myStrcomp s1 s2)
-                              | _ -> raise WrongType )
-              | _ -> raise WrongNumberOfArguments)*)
+                              | Word(w1),Word(w2)-> Int (myWordcomp w1 w2)
+                              | _ -> raise (WrongType String_type))
+              | _ -> raise (WrongNumberOfArguments (2, (List.length args))))
 	| Strapp ->  (match args with
               | [a1; a2] -> (match a1, a2 with
-                              | Word(w1),Word(w2) -> (print_endline "strapp"; Word(myStrapp w1 w2))
+                              | Word(w1),Word(w2) -> (print_endline "strapp"; Word (myStrapp w1 w2))
                               | _ -> raise (WrongType String_type))
               | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
 ;;
 (* END Interpreter *)
 exception Error of int * int * string
+exception UsageException of string
 
- let parse_buf_exn lexbuf =
-    try
-      Scamlparser.main Scamllexer.main lexbuf
-    with Parsing.Parse_error ->
-      begin
-        let curr = lexbuf.Lexing.lex_curr_p in
-        let line = curr.Lexing.pos_lnum in
-        let cnum = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
-        let tok = Lexing.lexeme lexbuf in
-        raise (Error (line,cnum,tok))
-      end
+let parse_buf_exn lexbuf =
+  try
+    Scamlparser.main Scamllexer.main lexbuf
+  with Parsing.Parse_error ->
+    begin
+      let curr = lexbuf.Lexing.lex_curr_p in
+      let line = curr.Lexing.pos_lnum in
+      let cnum = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
+      let tok = Lexing.lexeme lexbuf in
+      raise (Error (line,cnum,tok))
+    end
 
+(* return a list of bindings *)
+let parse_input_exn lexbuf = 
+  try
+    Inputparser.main Inputlexer.main lexbuf
+  with Parsing.Parse_error ->
+    begin
+      let curr = lexbuf.Lexing.lex_curr_p in
+      let line = curr.Lexing.pos_lnum in
+      let cnum = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
+      let tok = Lexing.lexeme lexbuf in
+      raise (Error (line,cnum,tok))
+    end
+
+let interpret_input () = 
+  let lexbuf = Lexing.from_channel stdin and
+      num_sets = (ref 0) and
+      env = Global_env([]) in
+    let result = parse_input_exn lexbuf in
+      let rec bind_input env token arg_num = match token with
+        | [] -> env
+        | h::t -> 
+          (match h with
+            | Set(wl) as s -> (incr num_sets; 
+                               bind_input 
+                                (make_binding (Binding ("arg" ^ (string_of_int arg_num),Set_type)) s env)
+                                t (arg_num + 1))
+            | Int(x)  as  i -> bind_input 
+                                (make_binding (Binding ("maxoutput", Int_type)) i env)
+                                t arg_num
+            | _             -> bind_input env t arg_num)
+      in let new_env = bind_input env result 0
+      in make_binding (Binding("numarguments", Int_type)) (Int (!num_sets)) new_env
+                
 let main () =
-	let cin =
-		if Array.length Sys.argv > 1
-		then open_in Sys.argv.(1)
-		else stdin
-	in
-	let lexbuf = Lexing.from_channel cin in
-    try
+  let program_name = if Array.length Sys.argv > 1
+                     then Sys.argv.(1)
+                     else raise (UsageException "No program was detected.")
+  and start_env = (interpret_input ())
+	in let lexbuf = Lexing.from_channel (open_in program_name) in
+     try
       let result = parse_buf_exn lexbuf
-      in (print_endline "in interpreter";
-          interpret result)
+      in interpret result start_env
     with Error (lnum, cnum, token) -> (print_string "Parse error on line ";
                                         print_int lnum; print_string " char:";
                                         print_int cnum; print_string " while reading token ";

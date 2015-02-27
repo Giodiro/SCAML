@@ -1,9 +1,7 @@
 (* File scamllexer.mll *)
 {
 open Scamlparser        (* The type token is defined in parser.mli *)
-open Printf
 open Ast
-exception Eof
 
 let line_num = ref 1
 
@@ -46,15 +44,16 @@ let keyword_table =
 } 
 
 let digit = ['0'-'9']
-let alpha = ['a'-'z']+
+let alpha = ['a'-'z' 'A'-'Z']
+let id = ['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9']*
 
 rule main = parse
       [' ' '\t'] { main lexbuf }
     | ['\n']     { Lexing.new_line lexbuf; main lexbuf }
     | digit+ as lxm  {  INT(int_of_string lxm) }
-    | '"' ((['a'-'z']+ ) as str) '"'  {  WORD str}
+    | '"' ((['a'-'z']+) as str) '"'  {  WORD str}
     | '"' ':' '"'   { EMPTY_WORD}
-    | alpha as var	 
+    | id as var	 
     	{ try
     		let token= Hashtbl.find keyword_table var in
     		token 

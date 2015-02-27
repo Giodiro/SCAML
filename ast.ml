@@ -19,7 +19,7 @@ type built_in =
 	| Plus
 	| Minus
 	| Strcomp
-	| Strapp  
+	| Strapp
 
 type def = 
 	| Binding of string * myType
@@ -62,3 +62,10 @@ and closure =
  	mutable env :	environment;
  	lambda		  :	expr    ;
 }
+
+exception Unbound of string (* the variable that is unbound *)
+exception HeadOfEmptySet
+exception TailOfEmptySet
+exception NotApplicable
+exception WrongNumberOfArguments of int * int (* expected number of args * actual number of args *)
+exception WrongType of myType (* expected_type *)
