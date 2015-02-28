@@ -54,9 +54,9 @@ let myBool_to_bool mBool = match mBool with
   | F -> false
 ;;
 
-let rec arg_types args = match args with
-      | [] -> []
-      | h::t -> (h._type)::(arg_types t)
+let rec func_type_of_gd args defi = match args with
+      | [] -> [defi.mtype]
+      | h::t -> (h.mtype)::(func_type_of_gd t defi)
 
 (* END Helper functions *)
 
@@ -74,30 +74,30 @@ and interpret_tl_list tl_list env =
                          interpret_tl_list t (interpret_global_def d env)
      | Expression (e) -> print_endline "Detected expr";
                          print_aexpr (interpret_expr e env);
-                         interpret_tl_list t env
-    )
+                         interpret_tl_list t env)
+
 (* interpret_global_def: global_def -> environment -> environment *)
 and interpret_global_def gd envi = match gd with
-	| Func_Glob_Binding (def,args,e) -> 
+	| Func_Glob_Binding (defi,args,e) -> 
       let newClosure = { parameters = args; env = envi; lambda = e; } in
       let newEnv = (make_binding 
-                      {name=def.name; _type=(Func_type (arg_types args))}
+                      {name=defi.name; mtype=(Func_type (func_type_of_gd defi args))}
                       (Closure newClosure) envi) in 
         (newClosure.env <- newEnv; newEnv)
-	| Var_Glob_Binding (def,e) -> 
-      make_binding def (interpret_expr e envi) envi
+	| Var_Glob_Binding (defi,e) -> 
+      make_binding defi (interpret_expr e envi) envi
 
 (* interpret_local_def: local_def -> environment -> expr *)
 and interpret_local_def ld envi = match ld with
-	| Func_Loc_Binding (def, args, e1, e2) -> 
+	| Func_Loc_Binding (defi, args, e1, e2) -> 
       let newClosure = {parameters = args; env = envi; lambda = e1} in
       let extendedEnv = (extend_env envi) in
       let newEnv = (make_binding 
-                      {name=def.name; _type=(Func_type (arg_types args))}
+                      {name=defi.name; mtype=(Func_type (func_type_of_gd defi args))}
                       (Closure newClosure) extendedEnv) in
         (newClosure.env <- newEnv; interpret_expr e2 newEnv)
-	| Var_Loc_Binding (def, e1, e2) ->
-      interpret_expr e2 (make_binding def (interpret_expr e1 envi) (extend_env envi))
+	| Var_Loc_Binding (defi, e1, e2) ->
+      interpret_expr e2 (make_binding defi (interpret_expr e1 envi) (extend_env envi))
 
 (* interpret_expr: expr -> environment -> aexpr *)
 and interpret_expr e env = match e with

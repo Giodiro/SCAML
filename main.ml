@@ -39,15 +39,15 @@ let interpret_input parsed_token =
           | Set(wl) as s -> (* bind sets *) 
               (incr num_sets; 
                bind_input 
-                (make_binding {name=("arg" ^ (string_of_int arg_num));_type=Set_type} s env)
+                (make_binding {name=("arg" ^ (string_of_int arg_num));mtype=Set_type} s env)
                 t (arg_num + 1))
           | Int(x)  as  i -> (* bind max output size *)
               bind_input 
-                (make_binding {name="maxoutput";_type=Int_type} i env)  
+                (make_binding {name="maxoutput";mtype=Int_type} i env)  
                 t arg_num
           | _  -> bind_input env t arg_num) (* ignore *)
     in let new_env = bind_input env parsed_token 0
-    in make_binding {name="numarguments";_type=Int_type} (Int (!num_sets)) new_env
+    in make_binding {name="numarguments";mtype=Int_type} (Int (!num_sets)) new_env
 
 let input_main () = 
   let lexbuf = Lexing.from_channel stdin in

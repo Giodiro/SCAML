@@ -10,6 +10,7 @@
 %token COMMA EMPTY_WORD
 %token FALSE TRUE
 %token EOF
+%token RARROW
 %token <Ast.myType> TYPE 
 %token <int> INT 
 %token <string> VAR
@@ -32,16 +33,16 @@ top_level:
 
 glob_def:
  | LET VAR LP arg_list RP TYPEOF TYPE ASS expr END	
-								{ Func_Glob_Binding({name = $2; _type = $7;}, $4, $9) }
+								{ Func_Glob_Binding({name = $2; mtype = $7;}, $4, $9) }
  | LET VAR TYPEOF TYPE ASS expr END
-								{ Var_Glob_Binding({name = $2; _type = $4;}, $6) }
+								{ Var_Glob_Binding({name = $2; mtype = $4;}, $6) }
 ;
 
 local_def:
  | LET VAR LP arg_list RP TYPEOF TYPE ASS expr IN expr 
- 								{ Func_Loc_Binding({name = $2; _type = $7;}, $4, $9, $11) }
+ 								{ Func_Loc_Binding({name = $2; mtype = $7;}, $4, $9, $11) }
  | LET VAR TYPEOF TYPE ASS expr IN expr 
- 								{ Var_Loc_Binding({name = $2; _type = $4;}, $6, $8) }
+ 								{ Var_Loc_Binding({name = $2; mtype = $4;}, $6, $8) }
 ;
 
 expr:
@@ -76,8 +77,16 @@ aexpr:
 
 arg_list:
  | /* empty */                  { [] }
- | VAR TYPEOF TYPE arg_list     { ({name = $1; _type = $3}) :: $4}
+ | VAR TYPEOF mtype arg_list     { ({name=$1; mtype=$3}) :: $4}
 ;
+
+mtype:
+ | TYPE                         { $1 }
+ | func_type                    { Func_type ($1) }
+
+func_type:
+ | TYPE RARROW TYPE             { [$1; $3] }
+ | TYPE RARROW func_type        { $1 :: $3 }
 
 list_expr:
  | LP RP                        { [] }

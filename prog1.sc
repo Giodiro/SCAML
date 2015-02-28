@@ -1,8 +1,12 @@
 let inputset:set = { "pawel", "lol", "looool" };;
 let postfixwith:string = "hello";;
 
-let postfix (iset:set appstr:string):set =
-	if (== iset {}) then {}
-	else (cons (strapp (head iset) appstr) (postfix (tail iset) appstr))
+let map (s:set f:string->string):set =
+    if (seteq s {}) then {}
+    else (cons (f (head s)) (map (tail s) f))
 ;;
-(postfix inputset postfixwith);;
+
+let help (str:string):string =
+    (strapp str postfixwith)
+;;
+(map inputset help);;

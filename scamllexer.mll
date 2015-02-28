@@ -62,6 +62,7 @@ rule main = parse
     | ')' 			 { RP }
     | '{'			 { LB }
     | '}'            { RB }
+    | "->"           { RARROW }
     | ";;" 			 {  END }
     | _         { let curr = lexbuf.Lexing.lex_curr_p in
                     syntax_error curr.Lexing.pos_lnum
