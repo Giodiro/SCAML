@@ -198,13 +198,5 @@ and apply_built_in bi args = match bi with
                           | Set(s) -> myUniq s
                           | _ -> raise (WrongType Set_type))
               | _ -> raise (WrongNumberOfArguments (1,(List.length args))))
- (* | Print  -> (match args with
-              | [a1] -> (match a1 with
-                          | (Set wl) as x -> print_aexpr x
-                          | (Int i)  as x -> print_aexpr x
-                          | (Word w) as x -> print_aexpr x
-                          | (Bool b) as x -> print_aexpr x
-                          | _ -> raise (WrongType Int_type))
-              | _ -> raise (WrongNumberOfArguments (1,(List.length args))))*)
 ;;
 (* END Interpreter *)

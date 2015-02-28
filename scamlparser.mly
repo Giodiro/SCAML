@@ -22,8 +22,8 @@
 %type <Ast.top_level list> main
 %%
 main:
- | EOF                          { [] }
- | top_level main               { $1::$2 }
+ | EOF   				{ [] }
+ | top_level main 		{ $1::$2 }
 ;
 top_level:
  | glob_def						{ Definition $1 }
@@ -63,7 +63,7 @@ aexpr:
  | CONS 						{ Built_In (Cons) }
  | HEAD							{ Built_In (Head) }
  | TAIL							{ Built_In (Tail) }
- | STRCOMP				      	{ Built_In (Strcomp) }
+ | STRCOMP                      { Built_In (Strcomp) }
  | STRAPP						{ Built_In (Strapp) }
  | INTEQ 						{ Built_In (Inteq) }
  | WORDEQ                       { Built_In (Wordeq) }

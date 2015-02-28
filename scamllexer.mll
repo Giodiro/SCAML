@@ -3,13 +3,8 @@
 open Scamlparser        (* The type token is defined in parser.mli *)
 open Ast
 
-exception Syntax_error of string
-
-let syntax_error lnum cnum msg tok = raise (Syntax_error 
-   (msg ^ " on line: " ^ 
-   (string_of_int lnum) ^
-   " char: " ^ (string_of_int cnum) ^
-   " while reading token " ^ tok))
+let syntax_error lnum cnum msg tok =
+    raise (SyntaxError (lnum, cnum, tok))
 
 let create_hashtable size init =
 	let tbl = Hashtbl.create size in
