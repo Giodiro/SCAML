@@ -3,8 +3,6 @@
 open Scamlparser        (* The type token is defined in parser.mli *)
 open Ast
 
-let line_num = ref 1
-
 exception Syntax_error of string
 
 let syntax_error lnum cnum msg tok = raise (Syntax_error 
@@ -18,10 +16,6 @@ let create_hashtable size init =
 		List.iter (fun (key, data) -> Hashtbl.add tbl key data) init;
 		tbl
 
-(*type state_t = 
-	| State_main 
-	| State_set*)
-
 let keyword_table = 
 	create_hashtable 32 [
 		("if", IF);
@@ -34,12 +28,17 @@ let keyword_table =
 		("tail", TAIL);
 		("strcomp", STRCOMP);
 		("strapp", STRAPP);
+        ("sort", SORT);
+        ("uniq", UNIQ);
 		("set", TYPE(Set_type));
 		("string", TYPE(String_type));
 		("int", TYPE(Int_type));
 		("bool", TYPE(Bool_type));
 		("false", FALSE);
 		("true", TRUE);
+        ("==", INTEQ);
+        ("wordeq", WORDEQ);
+        ("seteq", SETEQ)
 	] 
 } 
 
@@ -59,16 +58,15 @@ rule main = parse
     		token 
     	  with Not_found ->                        
     	   	 VAR var }	
-    | "=="		     { EQ }
     | ':'			 { TYPEOF }
     | '='			 { ASS }
-    | ','       { COMMA}
+    | ','            { COMMA }
     | '+'			 { PLUS }
     | '-'			 { MINUS }
     | '('			 { LP }
     | ')' 			 { RP }
-    | '{'			 {  LB}
-    | '}'      { RB}
+    | '{'			 { LB }
+    | '}'            { RB }
     | ";;" 			 {  END }
     | _         { let curr = lexbuf.Lexing.lex_curr_p in
                     syntax_error curr.Lexing.pos_lnum

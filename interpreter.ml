@@ -153,16 +153,21 @@ and apply_built_in bi args = match bi with
                           | Set(s) -> Set (myTail s)
                           | _ -> raise (WrongType Set_type))
               | _    -> raise (WrongNumberOfArguments (1,(List.length args))))
-	| Eq ->   (match args with
-              | [a1; a2] -> (match a1, a2 with
-                              | Int(i1),Int(i2) -> (print_endline "eq int"; myEq i1 i2)
-                              | Set(s1),Set(s2) -> (print_endline "eq set"; Bool (mySetEq s1 s2))
-                              | Word(w1),Word(w2) -> (print_endline "eq string"; Bool (if (myWordcomp w1 w2) = 0 then T else F))
-                              | Int(x),_ -> raise (WrongType Int_type)
-                              | Set(x),_ -> raise (WrongType Set_type)
-                              | Word(x),_ -> raise (WrongType String_type)
-                              | _ -> raise (WrongType Int_type)) (*Whatever*)
-              | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
+  | Inteq -> (match args with
+                | [a1; a2] -> (match a1, a2 with
+                                | Int(i1), Int(i2) -> (print_endline "eq int"; myEq i1 i2)
+                                | _, _        -> raise (WrongType Int_type))
+                | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
+  | Wordeq -> (match args with
+                | [a1; a2] -> (match a1, a2 with
+                                | Word(w1), Word(w2) -> (print_endline "eq string"; Bool (if (myWordcomp w1 w2) = 0 then T else F))
+                                | _, _        -> raise (WrongType String_type))
+                | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
+  | Seteq -> (match args with
+                | [a1; a2] -> (match a1, a2 with
+                                | Set(s1), Set(s2) -> (print_endline "eq set"; Bool (mySetEq s1 s2))
+                                | _, _        -> raise (WrongType Set_type))
+                | _ -> raise (WrongNumberOfArguments (2,(List.length args))))
 	| Plus -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1),Int(i2) -> (print_endline "plus"; myPlus i1 i2)

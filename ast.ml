@@ -16,13 +16,14 @@ type built_in =
 	| Cons
 	| Head
 	| Tail
-	| Eq
+	| Inteq
+	| Wordeq
+	| Seteq
 	| Plus
 	| Minus
 	| Strcomp
-  | Print
-  | Sort
-  | Uniq
+  	| Sort
+  	| Uniq
 	| Strapp
 
 type def = 
