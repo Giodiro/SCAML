@@ -1,9 +1,13 @@
-let setone:set = { "hell", "is", "scheme", "scheme" };;
-let settwo:set = { "scheme", "yeah", "ocaml", "scheme" };;
-
 let union (first:set second:set):set = 
-	if (== first {}) then (if (== second {}) then {} else (union second {}))
+	if (seteq first {}) then (if (seteq second {}) then {} else (union second {}))
 					 else (cons (head first) (union (tail first) second))
 ;;
 
-(union setone settwo);;
+let return:set = (sort (union arg0 arg1));;
+
+let restrict (ins:set num:int):set = 
+    if (== num 0) then {}
+    else (if (seteq ins {}) then {}
+          else (cons (head ins) (restrict (tail ins) (- num 1))))
+;;
+(restrict return maxoutput);;

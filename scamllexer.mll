@@ -31,7 +31,7 @@ let keyword_table =
 		("bool", TYPE(Bool_type));
 		("false", FALSE);
 		("true", TRUE);
-        ("==", INTEQ);
+        (*("==", INTEQ);*)
         ("wordeq", WORDEQ);
         ("seteq", SETEQ)
 	] 
@@ -62,6 +62,7 @@ rule main = parse
     | ')' 			 { RP }
     | '{'			 { LB }
     | '}'            { RB }
+    | "=="           { INTEQ }
     | "->"           { RARROW }
     | ";;" 			 {  END }
     | _         { let curr = lexbuf.Lexing.lex_curr_p in
