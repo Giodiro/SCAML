@@ -6,6 +6,7 @@ type myType =
 	| String_type
 	| Set_type
 	| Bool_type
+  | Func_type of myType list
   
 type word = 
 	| Non_Empty_Word of string
@@ -19,10 +20,16 @@ type built_in =
 	| Plus
 	| Minus
 	| Strcomp
+  | Print
+  | Sort
+  | Uniq
 	| Strapp
 
 type def = 
-	| Binding of string * myType
+{ 
+  name : string;
+  _type : myType;
+}
 
 type top_level =
   | Definition of global_def
@@ -69,3 +76,5 @@ exception TailOfEmptySet
 exception NotApplicable
 exception WrongNumberOfArguments of int * int (* expected number of args * actual number of args *)
 exception WrongType of myType (* expected_type *)
+exception Error of int * int * string
+exception UsageException of string
