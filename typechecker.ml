@@ -22,7 +22,7 @@ let rec lookup name env =
  let rec lookup_frame name fr =
  	match fr with
  	 | [] -> raise (Unbound name)
- 	 | h::tail -> (if h.name = name then h._type else lookup_frame name tail)
+ 	 | h::tail -> (if h.name = name then h.mtype else lookup_frame name tail)
  in (match env with
      | Global_env(f) -> lookup_frame name f
      | Whatever(f,e) -> try lookup_frame name f
@@ -55,8 +55,8 @@ let rec type_check tl_list start_env = match tl_list with
                           end)
 
 and arg_types defi args = match args with
-      | [] -> [defi._type]
-      | h::t -> (h._type)::(arg_types defi t)
+      | [] -> [defi.mtype]
+      | h::t -> (h.mtype)::(arg_types defi t)
 
 (* bind_arguments: list def -> type_environment -> type_environment*)
 and bind_arguments args env = match args with
@@ -65,7 +65,7 @@ and bind_arguments args env = match args with
 
 and type_check_glob_def gd env = match gd with
   | Func_Glob_Binding (defi, args, e) ->
-      let new_env = bind_arguments args (make_binding {name=defi.name; _type=(Func_type (arg_types defi args))} env) in
+      let new_env = bind_arguments args (make_binding {name=defi.name; mtype=(Func_type (arg_types defi args))} env) in
         (type_check_expr e new_env;
         new_env)
   | Var_Glob_Binding (defi, e) ->
@@ -75,7 +75,7 @@ and type_check_glob_def gd env = match gd with
       
 and type_check_local_def ld env = match ld with
   | Func_Loc_Binding (defi, args, e1, e2) ->
-      (let new_env = bind_arguments args (make_binding {name=defi.name; _type=(Func_type (arg_types defi args))}
+      (let new_env = bind_arguments args (make_binding {name=defi.name; mtype=(Func_type (arg_types defi args))}
                         (extend_env env)) in
         (type_check_expr e1 new_env;
          type_check_expr e2 new_env))

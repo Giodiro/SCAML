@@ -81,7 +81,7 @@ and interpret_global_def gd envi = match gd with
 	| Func_Glob_Binding (defi,args,e) -> 
       let newClosure = { parameters = args; env = envi; lambda = e; } in
       let newEnv = (make_binding 
-                      {name=defi.name; mtype=(Func_type (func_type_of_gd defi args))}
+                      {name=defi.name; mtype=(Func_type (func_type_of_gd args defi))}
                       (Closure newClosure) envi) in 
         (newClosure.env <- newEnv; newEnv)
 	| Var_Glob_Binding (defi,e) -> 
@@ -93,7 +93,7 @@ and interpret_local_def ld envi = match ld with
       let newClosure = {parameters = args; env = envi; lambda = e1} in
       let extendedEnv = (extend_env envi) in
       let newEnv = (make_binding 
-                      {name=defi.name; mtype=(Func_type (func_type_of_gd defi args))}
+                      {name=defi.name; mtype=(Func_type (func_type_of_gd args defi))}
                       (Closure newClosure) extendedEnv) in
         (newClosure.env <- newEnv; interpret_expr e2 newEnv)
 	| Var_Loc_Binding (defi, e1, e2) ->
