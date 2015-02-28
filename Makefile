@@ -13,7 +13,7 @@
 
 # These are the object files needed to rebuild the main executable file
 #
-OBJS = ast.cmo scamllexer.cmo scamlparser.cmo inputlexer.cmo inputparser.cmo library.cmo interpreter.cmo main.cmo 
+OBJS = ast.cmo scamllexer.cmo scamlparser.cmo inputlexer.cmo inputparser.cmo library.cmo interpreter.cmo typechecker.cmo main.cmo 
 
 #COMMONOBJS = ast.cmo
 
