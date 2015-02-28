@@ -20,7 +20,6 @@ type built_in =
 	| Plus
 	| Minus
 	| Strcomp
-  | Print
   | Sort
   | Uniq
 	| Strapp
@@ -76,5 +75,6 @@ exception TailOfEmptySet
 exception NotApplicable
 exception WrongNumberOfArguments of int * int (* expected number of args * actual number of args *)
 exception WrongType of myType (* expected_type *)
-exception Error of int * int * string
+exception SyntaxError of int * int * string
+exception ParseError of int * int * string
 exception UsageException of string

@@ -22,7 +22,7 @@
 %type <Ast.top_level list> main
 %%
 main:
- | EOF   				      { [] }
+ | EOF   				{ [] }
  | top_level main 		{ $1::$2 }
 ;
 top_level:
@@ -63,7 +63,7 @@ aexpr:
  | CONS 						{ Built_In (Cons) }
  | HEAD							{ Built_In (Head) }
  | TAIL							{ Built_In (Tail) }
- | STRCOMP					{ Built_In (Strcomp) }
+ | STRCOMP       				{ Built_In (Strcomp) }
  | STRAPP						{ Built_In (Strapp) }
  | EQ 							{ Built_In (Eq) }
  | PLUS							{ Built_In (Plus) }

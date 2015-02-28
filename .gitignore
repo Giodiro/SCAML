@@ -4,3 +4,6 @@ build.txt
 *.mli
 scamllexer.ml
 scamlparser.ml
+inputlexer.ml
+inputparser.ml
+*.output
