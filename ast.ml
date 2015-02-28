@@ -22,9 +22,9 @@ type built_in =
 	| Plus
 	| Minus
 	| Strcomp
+	| Strapp
   	| Sort
   	| Uniq
-	| Strapp
 
 type def = 
 { 

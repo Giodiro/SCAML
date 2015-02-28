@@ -70,7 +70,8 @@ let main () =
 	in let lexbuf = Lexing.from_channel (open_in program_name) in
      try
       let result = parse_exn lexbuf Scamllexer.main Scamlparser.main
-      in interpret result start_env
+      in (Typechecker.type_check result (Typechecker.type_env_of_env start_env);
+          interpret result start_env)
     with 
       | (ParseError (lnum, cnum, token)) as e -> 
           pretty_print_error e "Parse error "
