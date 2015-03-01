@@ -1,16 +1,14 @@
-let contains (inset:set elem:string):bool = 
-	if (seteq inset {}) then false
-	else (if (wordeq elem (head inset)) then true
-		  else (contains (tail inset) elem))
-;;
-
 let union (first:set second:set):set = 
-	if (seteq first {}) then second
-	else (let current:int = (head first) in
-			if (contains second current) then (union (tail first) second)
-			else (union (tail first) (cons current second)))
+    if (seteq first {}) 
+    then (if (seteq second {}) then {} else (union second {}))
+    else (cons (head first) (union (tail first) second))
 ;;
-let unionone:set = { "hell", "is", "scheme" };;
-let uniontwo:set = { "yeah", "ocaml" };;
 
-(union unionone uniontwo);;
+let return:set = (sort (union arg0 arg1));;
+
+let restrict (ins:set num:int):set = 
+    if (== num 0) then {}
+    else (if (seteq ins {}) then {}
+          else (cons (head ins) (restrict (tail ins) (- num 1))))
+;;
+(restrict return maxoutput);;

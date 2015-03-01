@@ -1,4 +1,4 @@
-{pawel,  :,     input   ,granpa    ,father , mother}
+{a, b, :}
 {:,     input,      father, uncle, father, :}
 {the, brown, fox, jumped, over, the, lazy, dog}
-5
+99

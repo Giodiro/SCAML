@@ -1,5 +1,4 @@
-let inputset:set = { "pawel", "lol", "looool" };;
-let postfixwith:string = "hello";;
+let postfixwith:string = "a";;
 
 let map (s:set f:string->string):set =
     if (seteq s {}) then {}
@@ -9,4 +8,11 @@ let map (s:set f:string->string):set =
 let help (str:string):string =
     (strapp str postfixwith)
 ;;
-(map inputset help);;
+
+let restrict (ins:set num:int):set = 
+    if (== num 0) then {}
+    else (if (seteq ins {}) then {}
+          else (cons (head ins) (restrict (tail ins) (- num 1))))
+;;
+
+(restrict (sort (map arg0 help)) maxoutput);;
