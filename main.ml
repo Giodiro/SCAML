@@ -73,7 +73,7 @@ let main () =
       in (Typechecker.type_check result (Typechecker.type_env_of_env start_env);
           interpret result start_env)
     with 
-      | TypeError (et, wt) -> (print_string "Typechecker error: expected type ";
+      | Typechecker.TypeError (et, wt) -> (print_string "Typechecker error: expected type ";
                                 print_string (string_of_type et); print_string " actual: ";
                                 print_string (string_of_type wt))
       | (ParseError (lnum, cnum, token)) as e -> 
