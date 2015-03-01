@@ -2,29 +2,35 @@ type myBool =
   | T | F
   
 type myType =
-	| Int_type
-	| String_type
-	| Set_type
-	| Bool_type
+  | Int_type
+  | String_type
+  | Set_type
+  | Bool_type
   | Func_type of myType list
-  
+
+type err_location =
+{
+  lnum : int;
+  cnum : int;
+  token : string;
+}
 type word = 
-	| Non_Empty_Word of string
-	| Empty_Word 
+  | Non_Empty_Word of string
+  | Empty_Word 
 
 type built_in = 
-	| Cons
-	| Head
-	| Tail
-	| Inteq
-	| Wordeq
-	| Seteq
-	| Plus
-	| Minus
-	| Strcomp
-	| Strapp
-  	| Sort
-  	| Uniq
+  | Cons
+  | Head
+  | Tail
+  | Inteq
+  | Wordeq
+  | Seteq
+  | Plus
+  | Minus
+  | Strcomp
+  | Strapp
+  | Sort
+  | Uniq
 
 type def = 
 { 
@@ -36,39 +42,39 @@ type top_level =
   | Definition of global_def
   | Expression of expr
 and global_def =
-	| Func_Glob_Binding of def * (def list) * expr
-	| Var_Glob_Binding of def * expr
+  | Func_Glob_Binding of def * (def list) * expr
+  | Var_Glob_Binding of def * expr
 and local_def = 
-	| Func_Loc_Binding of def * (def list) * expr * expr
-	| Var_Loc_Binding of def * expr * expr
+  | Func_Loc_Binding of def * (def list) * expr * expr
+  | Var_Loc_Binding of def * expr * expr
 and expr = 
- 	| Atomic_expr of aexpr 
- 	| Local_def of local_def
- 	| If of expr * expr * expr
- 	| Application of expr * (expr list)
+  | Atomic_expr of aexpr 
+  | Local_def of local_def
+  | If of expr * expr * expr
+  | Application of expr * (expr list)
 and aexpr = 
-	| Expr of expr
+  | Expr of expr
   | Closure of closure  (* This type is only visible to the interpreter *)
-	| Var of string 
-	| Set of word list 
-	| Int of int
+  | Var of string 
+  | Set of word list 
+  | Int of int
   | Bool of myBool
-	| Word of word
-	| Built_In of built_in 
+  | Word of word
+  | Built_In of built_in 
 and environment =
- | Global_env of binding list
- | Whatever of (binding list) * environment
+  | Global_env of binding list
+  | Whatever of (binding list) * environment
 (*and frame = { frame_binding : binding list }*)
 and binding = 
 { 
-	name_type : def  ;
-	value 	  : aexpr;
+  name_type : def  ;
+  value     : aexpr;
 }
 and closure = 
 {
- 	parameters	:	def list   ;
- 	mutable env :	environment;
- 	lambda		  :	expr    ;
+   parameters  :  def list   ;
+   mutable env :  environment;
+   lambda      :  expr    ;
 }
 
 exception Unbound of string (* the variable that is unbound *)

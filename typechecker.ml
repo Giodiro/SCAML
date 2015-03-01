@@ -50,7 +50,7 @@ let rec type_check tl_list start_env = match tl_list with
       | Definition (gd) -> type_check t (type_check_glob_def gd start_env)
       | Expression (e) -> begin 
                             print_endline "in type checker";
-                            type_check_expr e start_env;
+                            ignore (type_check_expr e start_env);
                             type_check t start_env;
                           end)
 
@@ -66,22 +66,22 @@ and bind_arguments args env = match args with
 and type_check_glob_def gd env = match gd with
   | Func_Glob_Binding (defi, args, e) ->
       let new_env = bind_arguments args (make_binding {name=defi.name; mtype=(Func_type (arg_types defi args))} env) in
-        (type_check_expr e new_env;
-        new_env)
+        (ignore (type_check_expr e new_env);
+         new_env)
   | Var_Glob_Binding (defi, e) ->
       let new_env = make_binding defi env in
-        (type_check_expr e new_env;
+        (ignore (type_check_expr e new_env);
         new_env)
       
 and type_check_local_def ld env = match ld with
   | Func_Loc_Binding (defi, args, e1, e2) ->
       (let new_env = bind_arguments args (make_binding {name=defi.name; mtype=(Func_type (arg_types defi args))}
                         (extend_env env)) in
-        (type_check_expr e1 new_env;
-         type_check_expr e2 new_env))
+        (ignore (type_check_expr e1 new_env);
+        type_check_expr e2 new_env))
   | Var_Loc_Binding (defi, e1, e2) ->
       let new_env = (make_binding defi (extend_env env)) in
-        (type_check_expr e1 new_env;
+        (ignore (type_check_expr e1 new_env);
          type_check_expr e2 new_env)
         
 (* type_check_expr: expr -> enironment -> type *)
@@ -109,7 +109,6 @@ and type_check_expr e env = match e with
             | h::t -> (type_check_expr h env)::(eval_args t)
            in type_check_args (eval_args arg_list) parameters)
         | _ as wrongt -> raise (TypeError (Func_type([Int_type;Int_type]), wrongt)))
-        
       
 and type_check_aexpr ae env = match ae with
   | Expr(e) -> type_check_expr e env

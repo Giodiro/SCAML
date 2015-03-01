@@ -5,8 +5,9 @@ open Interpreter
   Calls parser and lexer on lexbuf, and returns parsed tokens.
   Raises Error on parsing error 
 *)
-let parse_exn lexbuf lexer parser = 
+let rec parse_exn lexbuf lexer parser = 
   try
+    print_endline "parsing 1";
     parser lexer lexbuf
   with Parsing.Parse_error ->
     begin
@@ -16,6 +17,7 @@ let parse_exn lexbuf lexer parser =
       let tok = Lexing.lexeme lexbuf in
       raise (ParseError (line,cnum,tok))
     end
+    | Unbound (s) -> print_endline s; parse_exn lexbuf lexer parser
 
 let pretty_print_error err msg = match err with
   | SyntaxError (lnum, cnum, token)
@@ -25,8 +27,8 @@ let pretty_print_error err msg = match err with
       print_int lnum;
       print_string ", char ";
       print_int cnum;
-      print_string " while reading token";
-      print_string token)
+      print_string " while reading token ";
+      print_string token; print_endline "")
 
 (* interpret_input: token -> environment *)
 let interpret_input parsed_token = 
@@ -73,10 +75,10 @@ let main () =
       in (Typechecker.type_check result (Typechecker.type_env_of_env start_env);
           interpret result start_env)
     with 
-      | TypeError (et, wt) -> (print_string "Typechecker error: expected type ";
+      | Typechecker.TypeError (et, wt) -> (print_string "Type error: expected type ";
                                 print_string (string_of_type et); print_string " actual: ";
                                 print_string (string_of_type wt))
-      | (ParseError (lnum, cnum, token)) as e -> 
+      | (ParseError (ln, cn, tok)) as e -> 
           pretty_print_error e "Parse error "
       | (SyntaxError (lnum, cnum, token)) as e -> 
           pretty_print_error e "Syntax error "
