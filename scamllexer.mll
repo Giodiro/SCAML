@@ -6,7 +6,7 @@ open Ast
 let curr_loc = ref {lnum=0;cnum=0;token=""}
 
 let syntax_error lnum cnum msg tok =
-    raise (SyntaxError (lnum, cnum, tok))
+    raise (SyntaxError ({lnum=lnum; cnum=cnum; token=tok},"", false))
 
 let create_hashtable size init =
   let tbl = Hashtbl.create size in

@@ -1,5 +1,5 @@
 let union (first:set second:set):set = 
-    if (seteq first {}) then (if (seteq second {}) then {} else (union second {}))
+    if (seteq first {}) then if (seteq second {}) then {} else (union second {})
                      else (cons (head first) (union (tail first) second))
 ;;
 
@@ -25,8 +25,8 @@ let concatenate(s1:set s2:set):set =
 
 let restrict (ins:set num:int):set = 
     if (== num 0) then {}
-    else (if (seteq ins {}) then {}
-          else (cons (head ins) (restrict (tail ins) (- num 1))))
+    else if (seteq ins {}) then {}
+          else (cons (head ins) (restrict (tail ins) (- num 1)))
 ;;
 
 (restrict (sort (concatenate arg0 (perm {"a", "b", "c"} 2))) maxoutput);;

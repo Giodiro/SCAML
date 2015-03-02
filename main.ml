@@ -1,13 +1,31 @@
 open Ast
 open Interpreter
 
+
+let pretty_print_error err msg = match err with
+  | SyntaxError ({lnum=l;cnum=c;token=t},m, _) -> (
+      print_string "Syntax error at ";
+      print_string "Character "; print_int c;
+      print_string ", line "; print_int l;
+      print_newline (); 
+      if (m != "") then (print_string m; print_newline ();)   
+      else ())
+  | ParseError (lnum, cnum, token) -> (
+      print_string msg;
+      print_string " on line ";
+      print_int lnum;
+      print_string ", char ";
+      print_int cnum;
+      print_string " while reading token ";
+      print_string token; print_newline ();)
+
+let hasError = ref false
 (* 
   Calls parser and lexer on lexbuf, and returns parsed tokens.
   Raises Error on parsing error 
 *)
 let rec parse_exn lexbuf lexer parser = 
   try
-    print_endline "parsing 1";
     parser lexer lexbuf
   with Parsing.Parse_error ->
     begin
@@ -17,18 +35,12 @@ let rec parse_exn lexbuf lexer parser =
       let tok = Lexing.lexeme lexbuf in
       raise (ParseError (line,cnum,tok))
     end
-    | Unbound (s) -> print_endline s; parse_exn lexbuf lexer parser
+    | (SyntaxError (_,_,fatal)) as e -> 
+        (pretty_print_error e ""; 
+         hasError := true;
+         (if fatal then failwith "" else
+          parse_exn lexbuf lexer parser))
 
-let pretty_print_error err msg = match err with
-  | SyntaxError (lnum, cnum, token)
-  | ParseError (lnum, cnum, token) -> (
-      print_string msg;
-      print_string " on line ";
-      print_int lnum;
-      print_string ", char ";
-      print_int cnum;
-      print_string " while reading token ";
-      print_string token; print_endline "")
 
 (* interpret_input: token -> environment *)
 let interpret_input parsed_token = 
@@ -57,10 +69,10 @@ let input_main () =
     let result = parse_exn lexbuf Inputlexer.main Inputparser.main
     in interpret_input result
   with
-    | (ParseError (lnum, cnum, token)) as e -> 
+    | (ParseError (_)) as e -> 
         (pretty_print_error e "Parse error in input language ";
          failwith "")
-    | (SyntaxError (lnum, cnum, token)) as e -> 
+    | SyntaxError (_) as e -> 
         (pretty_print_error e "Syntax error in input language ";
           failwith "")
 
@@ -69,18 +81,19 @@ let main () =
                      then Sys.argv.(1)
                      else raise (UsageException "No program was detected.")
   and start_env = input_main ()
-	in let lexbuf = Lexing.from_channel (open_in program_name) in
+  in let lexbuf = Lexing.from_channel (open_in program_name) in
      try
       let result = parse_exn lexbuf Scamllexer.main Scamlparser.main
-      in (Typechecker.type_check result (Typechecker.type_env_of_env start_env);
-          interpret result start_env)
+      in if (!hasError) then () else (* ! doesn't mean NOT, it dereferences the value *)
+      (Typechecker.type_check result (Typechecker.type_env_of_env start_env);
+       interpret result start_env)
     with 
       | Typechecker.TypeError (et, wt) -> (print_string "Type error: expected type ";
                                 print_string (string_of_type et); print_string " actual: ";
                                 print_string (string_of_type wt))
-      | (ParseError (ln, cn, tok)) as e -> 
+      | (ParseError (_)) as e -> 
           pretty_print_error e "Parse error "
-      | (SyntaxError (lnum, cnum, token)) as e -> 
+      | (SyntaxError (_)) as e -> 
           pretty_print_error e "Syntax error "
       | (WrongType t)  -> (print_string "Interpreter error: expected type ";
                              print_string (string_of_type t))
