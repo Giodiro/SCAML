@@ -1,0 +1,54 @@
+
+** Conflict (shift/reduce) in state 72.
+** Token involved: ELSE
+** This state is reached from main after reading:
+
+IF error THEN IF expr THEN error 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+top_level main 
+expr END 
+(?)
+
+** In state 72, looking ahead at ELSE, shifting is permitted
+** because of the following sub-derivation:
+
+IF error THEN expr ELSE expr 
+              IF expr THEN error . ELSE expr 
+
+** In state 72, looking ahead at ELSE, reducing production
+** expr -> IF expr THEN error 
+** is permitted because of the following sub-derivation:
+
+IF error THEN expr ELSE expr // lookahead token appears
+              IF expr THEN error . 
+
+** Conflict (shift/reduce) in state 59.
+** Token involved: THEN
+** This state is reached from main after reading:
+
+IF IF error 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+top_level main 
+expr END 
+(?)
+
+** In state 59, looking ahead at THEN, shifting is permitted
+** because of the following sub-derivation:
+
+IF expr THEN expr ELSE expr 
+   IF error . THEN expr ELSE expr 
+
+** In state 59, looking ahead at THEN, reducing production
+** expr -> IF error 
+** is permitted because of the following sub-derivation:
+
+IF expr THEN expr ELSE expr // lookahead token appears
+   IF error . 

@@ -88,6 +88,6 @@ exception TailOfEmptySet
 exception NotApplicable
 exception WrongNumberOfArguments of int * int (* expected number of args * actual number of args *)
 exception WrongType of myType (* expectedmtype *)
-exception SyntaxError of int * int * string
 exception ParseError of int * int * string
 exception UsageException of string
+exception SyntaxError of err_location * string * bool

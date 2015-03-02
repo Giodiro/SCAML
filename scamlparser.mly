@@ -32,7 +32,7 @@ main:
 top_level:
  | glob_def           { Definition $1 }
  | expr END           { Expression $1 }
- | error END          { raise (Ast.Unbound "An error was detected on line ?")}
+ | error END          { raise (SyntaxError ($2, "", false))}
 ;
 
 glob_def:
@@ -40,13 +40,15 @@ glob_def:
                 { Func_Glob_Binding({name = (fst $2); mtype = (fst $7);}, $4, $9) }
  | LET VAR TYPEOF TYPE ASS expr END
                 { Var_Glob_Binding({name = (fst $2); mtype = (fst $4);}, $6) }
+ | LET VAR LP error RP TYPEOF TYPE ASS expr END
+                { raise (SyntaxError ($3, "", false)) }
 ;
 
 local_def:
  | LET VAR LP arg_list RP TYPEOF TYPE ASS expr IN expr 
                  { Func_Loc_Binding({name = (fst $2); mtype = (fst $7);}, $4, $9, $11) }
  | LET VAR LP error RP TYPEOF TYPE ASS expr IN expr 
-                { raise (Ast.Unbound "Error in local declaration ")}
+                { raise (SyntaxError ($3, "", false)) }
  | LET VAR TYPEOF TYPE ASS expr IN expr 
                  { Var_Loc_Binding({name = (fst $2); mtype = (fst $4);}, $6, $8) }
 ;
@@ -57,12 +59,19 @@ expr:
  | IF expr THEN expr ELSE expr  { If($2, $4, $6) }
  | LP logic_expr RP             { Logic_expr $2 }
  | LP expr list_expr RP         { Application($2, $3) }
+ | LP error RP                  { raise (SyntaxError ($1, "", false)) }
 ;
 
 aexpr:
  | LP expr RP                   { Expr($2) }
+ | LP error                     { raise (SyntaxError ($1, "( might be unmatched", true))}
+ | error RP                     { raise (SyntaxError ($2, ") might be unmatched", true))}
+ | LP error RP                  { raise (SyntaxError ($1, "", false)) }
  | VAR                          { Var((fst $1)) }
  | LB word_list RB              { Set($2) }
+ | LB error RB                  { raise (SyntaxError ($1,"", false)) }
+ | LB error                     { raise (SyntaxError ($1,"{ might be unmatched", true)) } 
+ | error RB                     { raise (SyntaxError ($2,"} might be unmatched", true)) }
  | INT                          { Int((fst $1)) }
  | WORD                         { Word (Non_Empty_Word((fst $1))) }
  | EMPTY_WORD                   { Word Empty_Word }
