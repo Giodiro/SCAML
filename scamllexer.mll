@@ -72,6 +72,9 @@ rule main = parse
     | '}'      { RB(loc_from_lexbuf lexbuf) }
     | "=="     { INTEQ(loc_from_lexbuf lexbuf) }
     | "->"     { RARROW(loc_from_lexbuf lexbuf) }
+    | "&&"     { AND(loc_from_lexbuf lexbuf) }
+    | "||"     { OR(loc_from_lexbuf lexbuf) }
+    | "!"      { NOT(loc_from_lexbuf lexbuf) }
     | ";;"     { END(loc_from_lexbuf lexbuf) }
     | _        { let curr = lexbuf.Lexing.lex_curr_p in
                   syntax_error curr.Lexing.pos_lnum

@@ -54,6 +54,12 @@ let myBool_to_bool mBool = match mBool with
   | F -> false
 ;;
 
+(* myBool_to_bool: bool -> myBool *)
+let bool_to_myBool mBool = match mBool with
+  | true -> T
+  | false -> F
+;;
+
 let rec func_type_of_gd args defi = match args with
       | [] -> [defi.mtype]
       | h::t -> (h.mtype)::(func_type_of_gd t defi)
@@ -109,7 +115,7 @@ and interpret_expr e env = match e with
          | Bool(b) -> if myBool_to_bool b then interpret_expr consequent env
                                           else interpret_expr alternate env
          | _       -> raise (WrongType Bool_type))
-         
+  | Logic_expr (le) -> interpret_logic_expr le env      
 	| Application(e, arguments) -> let func = (interpret_expr e env) in
                                  let rec eval_args elist = match elist with (* Evaluates all arguments *)
                                   | [] -> []
@@ -124,6 +130,17 @@ and interpret_aexpr ae env = match ae with
 	| Expr(e)         -> interpret_expr e env
 	| Var(var_name)   -> lookup var_name env
   | _ as x          -> x
+
+and interpret_logic_expr le env = match le with 
+  | And_expr (e1, e2) -> (match (interpret_expr e1 env), (interpret_expr e2 env) with
+                          | Bool(b1), Bool(b2) -> Bool (bool_to_myBool (myBool_to_bool b1 && myBool_to_bool b2))
+                          | _, _               -> raise (WrongType Bool_type))
+  | Or_expr (e1, e2) -> (match (interpret_expr e1 env), (interpret_expr e2 env) with
+                          | Bool(b1), Bool(b2) -> Bool (bool_to_myBool (myBool_to_bool b1 || myBool_to_bool b2))
+                          | _, _               -> raise (WrongType Bool_type))
+  | Not_expr (e) -> (match (interpret_expr e env) with
+                          | Bool(b) -> Bool (bool_to_myBool (not (myBool_to_bool b)))
+                          | _       -> raise (WrongType Bool_type))
 
 and args_bindings params args env = match params, args with
   | [],[] -> env

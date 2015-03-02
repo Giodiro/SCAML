@@ -96,6 +96,7 @@ and type_check_expr e env = match e with
         | Bool_type -> if (t2 = t3) then t2 
                        else raise (TypeError (t2, t3))
         | _ as twrong -> raise (TypeError (Bool_type, twrong)))
+  | Logic_expr (le) -> type_check_logic_expr le env   
   | Application (e, arg_list) ->
       (let te = type_check_expr e env in match te with
         | Func_type(parameters) ->
@@ -118,7 +119,22 @@ and type_check_aexpr ae env = match ae with
   | Bool(b) -> Bool_type
   | Word(w) -> String_type
   | Built_In(bi) -> type_check_built_in bi 
-  
+
+and type_check_logic_expr le env = match le with
+  | And_expr (e1, e2) -> (match (type_check_expr e1 env), (type_check_expr e2 env) with
+                          | Bool_type, Bool_type      -> Bool_type
+                          | Bool_type, (_ as twrong)  -> raise (TypeError (Bool_type, twrong))
+                          | (_ as twrong), Bool_type  -> raise (TypeError (Bool_type, twrong))
+                          | (_ as twrong), _          -> raise (TypeError (Bool_type, twrong)))
+  | Or_expr (e1, e2) -> (match (type_check_expr e1 env), (type_check_expr e2 env) with
+                          | Bool_type, Bool_type    -> Bool_type
+                          | Bool_type , (_ as twrong) -> raise (TypeError (Bool_type, twrong))
+                          | (_ as twrong), Bool_type  -> raise (TypeError (Bool_type, twrong))
+                          | (_ as twrong), _          -> raise (TypeError (Bool_type, twrong)))
+  | Not_expr (e) -> (match (type_check_expr e env) with
+                          | Bool_type               -> Bool_type
+                          | _ as twrong             -> raise (TypeError (Bool_type, twrong)))
+
 and type_check_built_in bi = match bi with
   | Cons -> Func_type [String_type; Set_type; Set_type]
   | Head -> Func_type [Set_type; String_type]

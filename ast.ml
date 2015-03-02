@@ -51,6 +51,7 @@ and expr =
   | Atomic_expr of aexpr 
   | Local_def of local_def
   | If of expr * expr * expr
+  | Logic_expr of logic_expr
   | Application of expr * (expr list)
 and aexpr = 
   | Expr of expr
@@ -61,6 +62,10 @@ and aexpr =
   | Bool of myBool
   | Word of word
   | Built_In of built_in 
+and logic_expr = 
+  | And_expr of expr * expr
+  | Or_expr of expr * expr
+  | Not_expr of expr 
 and environment =
   | Global_env of binding list
   | Whatever of (binding list) * environment
