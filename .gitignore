@@ -7,3 +7,4 @@ scamlparser.ml
 inputlexer.ml
 inputparser.ml
 *.output
+main

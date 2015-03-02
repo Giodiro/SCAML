@@ -1,9 +1,8 @@
 open Ast
 open Interpreter
 
-
 let pretty_print_error err msg = match err with
-  | SyntaxError ({lnum=l;cnum=c;token=t},m, _) -> (
+  | SyntaxError (m, _, {lnum=l;cnum=c;token=t}) -> (
       print_string "Syntax error at ";
       print_string "Character "; print_int c;
       print_string ", line "; print_int l;
@@ -35,7 +34,7 @@ let rec parse_exn lexbuf lexer parser =
       let tok = Lexing.lexeme lexbuf in
       raise (ParseError (line,cnum,tok))
     end
-    | (SyntaxError (_,_,fatal)) as e -> 
+    | (SyntaxError (_,fatal,_)) as e -> 
         (pretty_print_error e ""; 
          hasError := true;
          (if fatal then failwith "" else
@@ -50,18 +49,19 @@ let interpret_input parsed_token =
       | [] -> env
       | h::t -> 
         (match h with
-          | Set(wl) as s -> (* bind sets *) 
+          | Set(wl, loc) as s -> (* bind sets *) 
               (incr num_sets; 
                bind_input 
                 (make_binding {name=("arg" ^ (string_of_int arg_num));mtype=Set_type} s env)
                 t (arg_num + 1))
-          | Int(x)  as  i -> (* bind max output size *)
+          | Int(x, loc)  as  i -> (* bind max output size *)
               bind_input 
                 (make_binding {name="maxoutput";mtype=Int_type} i env)  
                 t arg_num
           | _  -> bind_input env t arg_num) (* ignore *)
     in let new_env = bind_input env parsed_token 0
-    in make_binding {name="numarguments";mtype=Int_type} (Int (!num_sets)) new_env
+    in make_binding {name="numarguments";mtype=Int_type} 
+                    (Int ((!num_sets), {lnum=0;cnum=0;token=""})) new_env
 
 let input_main () = 
   let lexbuf = Lexing.from_channel stdin in
@@ -88,21 +88,34 @@ let main () =
       (Typechecker.type_check result (Typechecker.type_env_of_env start_env);
        interpret result start_env)
     with 
-      | Typechecker.TypeError (et, wt) -> (print_string "Type error: expected type ";
-                                print_string (string_of_type et); print_string " actual: ";
-                                print_string (string_of_type wt))
+      | Typechecker.TypeError (et, wt, loc) -> 
+          (print_string "Type error on line "; print_int loc.lnum;
+           print_string " character "; print_int loc.cnum;
+           print_string " type of "; print_string loc.token;
+           print_string " is "; print_string (string_of_type wt);
+           print_string ". Expected type "; print_string (string_of_type et);
+           print_newline ())
       | (ParseError (_)) as e -> 
           pretty_print_error e "Parse error "
       | (SyntaxError (_)) as e -> 
           pretty_print_error e "Syntax error "
       | (WrongType t)  -> (print_string "Interpreter error: expected type ";
                              print_string (string_of_type t))
-      | WrongNumberOfArguments (ex,ac) -> (print_string "Interpreter error: expected ";
-                                             print_int ex; print_string " arguments. ";
-                                             print_string "The function is not applicable to ";
-                                             print_int ac; print_string " arguments.")
-      | Unbound (s) -> (print_string "Interpreter error: variable ";
-                          print_string s; print_string " is not bound.";)
+      | WrongNumberOfArguments (ex,ac, loc) -> 
+          (print_string "Line "; print_int loc.lnum;
+           print_string " character "; print_int loc.cnum;
+           print_string " - wrong number of arguments in application of ";
+           print_string loc.token; print_string " expected ";
+           print_int ex; print_string " arguments. ";
+           print_string "The function is not applicable to "; 
+           print_int ac; print_string " arguments.";
+           print_newline ())
+      | Unbound (s, loc) ->
+          (print_string "Line "; print_int loc.lnum;
+           print_string " character "; print_int loc.cnum;
+           print_string ". Variable ";
+           print_string s; print_string " is not bound.";
+           print_newline ())
       | Failure (s) -> print_string "Error: exiting."
 ;;
 

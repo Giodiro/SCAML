@@ -15,14 +15,14 @@ let myTail aSet = match aSet with
   | h::t -> t
 ;;
 
-(* myEq: int -> int -> aexpr (Bool) *)
-let myEq i1 i2 = if i1 = i2 then Bool (T) else Bool (F);;
+(* myEq: int -> int -> myBool *)
+let myEq i1 i2 = if i1 = i2 then T else F;;
 
 (* myPlus: int -> int -> int *)
-let myPlus i1 i2 = Int(i1+i2);;
+let myPlus i1 i2 = i1+i2;;
 
 (* myMinus: int -> int -> aexpr (Int) *)
-let myMinus i1 i2 = Int(i1-i2);;
+let myMinus i1 i2 = i1-i2;;
 
 (* myStrapp: word -> word -> word *)
 let myStrapp w1 w2 = match w1,w2 with
@@ -66,20 +66,20 @@ let mySetEq s1 s2 =
                    (List.sort myWordcomp s2)
 
 (* Sorts a set of words in lexicographical order *)
-(* mySort: word list -> aexpr (Set) *)                   
-let mySort s = Set (List.sort myWordcomp s)
+(* mySort: word list -> word list *)                   
+let mySort s = List.sort myWordcomp s
 
 (* Returns a set containing no duplicates *)
-(* myUniq: word list -> aexpr (Set) *)
+(* myUniq: word list -> word list *)
 let myUniq s = 
   let rec help acc s = match s with
     | [] -> acc
     | h::t -> help (myCons h acc) t
-  in Set (help [] s)
+  in help [] s
   
 (* print_aexpr: aexpr -> unit *)
 let print_aexpr ae = match ae with
-  | (Set wl) -> (
+  | (Set (wl, _)) -> (
     let rec print_set s = match s with
       | [] -> print_string "}"
       | h::t -> ((match h, t with
@@ -89,12 +89,12 @@ let print_aexpr ae = match ae with
                 | Empty_Word, _       -> print_string ":"; print_string ", ");
                 print_set t)
     in (print_string "{ "; print_set wl; print_string "\n"; flush_all ()))
-  | (Int i) -> print_endline (string_of_int i)
-  | (Word w) -> ((match w with
+  | (Int (i, _)) -> print_endline (string_of_int i)
+  | (Word (w, _)) -> ((match w with
                 | Non_Empty_Word(wo) -> print_string wo; print_string ", "
                 | Empty_Word        -> print_string ":"; print_string ", ");
                 flush_all ())
-  | (Bool b) -> (match b with
+  | (Bool (b, _)) -> (match b with
                 | T -> print_endline "True "
                 | F -> print_endline "False ")
   (*| (String s) -> print_endline s*)

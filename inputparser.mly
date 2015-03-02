@@ -2,11 +2,11 @@
   open Ast
 %}
  
-%token <string> WORD
-%token <int> INT
-%token LB RB COMMA
-%token EMPTY_WORD
-%token EOF
+%token <string*Ast.err_location> WORD
+%token <int*Ast.err_location> INT
+%token <Ast.err_location> LB RB COMMA
+%token <Ast.err_location> EMPTY_WORD
+%token <Ast.err_location> EOF
 %start main
 %type <Ast.aexpr list> main
 %%
@@ -15,8 +15,8 @@ main:
   | input main          { $1::$2 }
 ;
 input:
-  | LB word_list RB     { Set($2) }
-  | INT                 { Int($1) }
+  | LB word_list RB     { Set($2, $1) }
+  | INT                 { Int((fst $1), (snd $1)) }
 ;
 
 word_list:
@@ -26,6 +26,6 @@ word_list:
 ;
 
 word:
- | WORD 			    { Non_Empty_Word($1) }
+ | WORD 			    { Non_Empty_Word((fst $1)) }
  | EMPTY_WORD 			{ Empty_Word }
 ;

@@ -16,21 +16,21 @@ type err_location =
 }
 type word = 
   | Non_Empty_Word of string
-  | Empty_Word 
+  | Empty_Word
 
 type built_in = 
   | Cons
-  | Head
-  | Tail
-  | Inteq
-  | Wordeq
-  | Seteq
-  | Plus
-  | Minus
-  | Strcomp
-  | Strapp
-  | Sort
-  | Uniq
+  | Head 
+  | Tail 
+  | Inteq 
+  | Wordeq 
+  | Seteq 
+  | Plus 
+  | Minus 
+  | Strcomp 
+  | Strapp 
+  | Sort 
+  | Uniq 
 
 type def = 
 { 
@@ -55,12 +55,12 @@ and expr =
 and aexpr = 
   | Expr of expr
   | Closure of closure  (* This type is only visible to the interpreter *)
-  | Var of string 
-  | Set of word list 
-  | Int of int
-  | Bool of myBool
-  | Word of word
-  | Built_In of built_in 
+  | Var of string * err_location
+  | Set of (word list) * err_location
+  | Int of int * err_location
+  | Bool of myBool * err_location
+  | Word of word * err_location
+  | Built_In of built_in * err_location
 and environment =
   | Global_env of binding list
   | Whatever of (binding list) * environment
@@ -77,12 +77,12 @@ and closure =
    lambda      :  expr    ;
 }
 
-exception Unbound of string (* the variable that is unbound *)
+exception Unbound of string * err_location (* the variable that is unbound *)
 exception HeadOfEmptySet
 exception TailOfEmptySet
 exception NotApplicable
-exception WrongNumberOfArguments of int * int (* expected number of args * actual number of args *)
+exception WrongNumberOfArguments of int * int * err_location(* expected number of args * actual number of args *)
 exception WrongType of myType (* expectedmtype *)
 exception ParseError of int * int * string
 exception UsageException of string
-exception SyntaxError of err_location * string * bool
+exception SyntaxError of string * bool * err_location

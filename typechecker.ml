@@ -1,6 +1,6 @@
 open Ast
 
-exception TypeError of myType * myType
+exception TypeError of myType * myType * err_location
 
 (* SECTION Environment helpers *)
 
@@ -18,15 +18,15 @@ let rec type_env_of_env env =
 ;;
  
 (* lookup: string -> environment -> myType; throws Unbound *)
-let rec lookup name env =
+let rec lookup name env loc =
  let rec lookup_frame name fr =
  	match fr with
- 	 | [] -> raise (Unbound name)
+ 	 | [] -> raise (Unbound (name, loc))
  	 | h::tail -> (if h.name = name then h.mtype else lookup_frame name tail)
  in (match env with
      | Global_env(f) -> lookup_frame name f
      | Whatever(f,e) -> try lookup_frame name f
-                        with Unbound(x) -> lookup name e)
+                        with Unbound(_) -> lookup name e loc)
 ;;
 
 (* make_binding: def -> environment -> environment *)
@@ -42,7 +42,7 @@ let extend_env env = match env with
   | (Whatever (fr, e)) -> Whatever ([], (Whatever (fr, e)));;
 
 (* END Environment helper *)
-
+(* type_check: top_level list -> type_environment -> unit *)
 let rec type_check tl_list start_env = match tl_list with
   | [] -> ()
   | h :: t -> 
@@ -58,11 +58,12 @@ and arg_types defi args = match args with
       | [] -> [defi.mtype]
       | h::t -> (h.mtype)::(arg_types defi t)
 
-(* bind_arguments: list def -> type_environment -> type_environment*)
+(* bind_arguments: list def -> type_environment -> type_environment *)
 and bind_arguments args env = match args with
   | [] -> env
   | h::t -> bind_arguments t (make_binding h env)
-
+  
+(* type_check_global_def: global_def -> type_environment -> type_environment *)
 and type_check_glob_def gd env = match gd with
   | Func_Glob_Binding (defi, args, e) ->
       let new_env = bind_arguments args (make_binding {name=defi.name; mtype=(Func_type (arg_types defi args))} env) in
@@ -72,7 +73,8 @@ and type_check_glob_def gd env = match gd with
       let new_env = make_binding defi env in
         (ignore (type_check_expr e new_env);
         new_env)
-      
+        
+(* type_check_local_def: local_def -> type_environment -> myType * err_location *)
 and type_check_local_def ld env = match ld with
   | Func_Loc_Binding (defi, args, e1, e2) ->
       (let new_env = bind_arguments args (make_binding {name=defi.name; mtype=(Func_type (arg_types defi args))}
@@ -84,41 +86,44 @@ and type_check_local_def ld env = match ld with
         (ignore (type_check_expr e1 new_env);
          type_check_expr e2 new_env)
         
-(* type_check_expr: expr -> enironment -> type *)
+(* type_check_expr: expr -> type_environment -> myType * err_location *)
 and type_check_expr e env = match e with
   | (Atomic_expr ae) -> type_check_aexpr ae env
   | (Local_def ld) -> type_check_local_def ld env
   | If (e1, e2, e3) ->
-      (let t1 = type_check_expr e1 env
-       and t2 = type_check_expr e2 env
-       and t3 = type_check_expr e3 env
+      (let (t1,loc1) = type_check_expr e1 env
+       and (t2,loc2) = type_check_expr e2 env
+       and (t3,loc3) = type_check_expr e3 env
        in match t1 with 
-        | Bool_type -> if (t2 = t3) then t2 
-                       else raise (TypeError (t2, t3))
-        | _ as twrong -> raise (TypeError (Bool_type, twrong)))
+        | Bool_type -> if (t2 = t3) then (t2, loc2) 
+                       else raise (TypeError (t2, t3, loc3))
+        | _ as twrong -> raise (TypeError (Bool_type, twrong, loc1)))
   | Application (e, arg_list) ->
       (let te = type_check_expr e env in match te with
-        | Func_type(parameters) ->
+        | (Func_type(parameters), loc) ->
           (let rec type_check_args args params = match args, params with
             | [],[ret] -> ret
-            | (ha::ta),(hp::tp) -> if ha = hp then (type_check_args ta tp)
-                                   else raise (TypeError (hp, ha))
-            | _ -> failwith "There was an error in the type checker"
+            | [],[] | (_,[]) | (_,[_]) | ([],_) -> 
+              raise (WrongNumberOfArguments (((List.length parameters) - 1),(List.length arg_list), loc))
+            | ((ha,la)::ta),(hp::tp) -> if ha = hp then (type_check_args ta tp)
+                                   else raise (TypeError (hp, ha, la))
            and eval_args args = match args with
             | [] -> []
             | h::t -> (type_check_expr h env)::(eval_args t)
-           in type_check_args (eval_args arg_list) parameters)
-        | _ as wrongt -> raise (TypeError (Func_type([Int_type;Int_type]), wrongt)))
+           in ((type_check_args (eval_args arg_list) parameters), loc))
+        | (t, loc) -> raise (TypeError (Func_type([]), t, loc)))
       
+(* type_check_aexpr: aexpr -> type_environment -> myType * err_location *)
 and type_check_aexpr ae env = match ae with
   | Expr(e) -> type_check_expr e env
-  | Var(v) -> lookup v env
-  | Set(s) -> Set_type
-  | Int(i) -> Int_type
-  | Bool(b) -> Bool_type
-  | Word(w) -> String_type
-  | Built_In(bi) -> type_check_built_in bi 
+  | Var(v, loc) -> ((lookup v env loc),loc)
+  | Set(s, loc) -> (Set_type,loc)
+  | Int(i, loc) -> (Int_type,loc)
+  | Bool(b, loc) -> (Bool_type,loc)
+  | Word(w,loc) -> (String_type,loc)
+  | Built_In(bi, loc) -> ((type_check_built_in bi ),loc)
   
+(* type_check_built_in: built_in -> myType *)
 and type_check_built_in bi = match bi with
   | Cons -> Func_type [String_type; Set_type; Set_type]
   | Head -> Func_type [Set_type; String_type]
