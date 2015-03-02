@@ -5,10 +5,11 @@
 %token <Ast.err_location> IF THEN ELSE 
 %token <Ast.err_location> LET IN ASS END TYPEOF
 %token <Ast.err_location> CONS HEAD TAIL STRCOMP STRAPP SORT UNIQ
-%token <Ast.err_location>INTEQ WORDEQ SETEQ PLUS MINUS 
-%token <Ast.err_location>LP RP LB RB
+%token <Ast.err_location> INTEQ WORDEQ SETEQ PLUS MINUS 
+%token <Ast.err_location> LP RP LB RB
 %token <Ast.err_location> COMMA EMPTY_WORD
 %token <Ast.err_location> FALSE TRUE
+%token <Ast.err_location> AND OR NOT
 %token <Ast.err_location> EOF
 %token <Ast.err_location> RARROW
 %token <Ast.myType*Ast.err_location> TYPE 
@@ -18,7 +19,9 @@
 %right IF THEN ELSE
 %left INTEQ WORDEQ SETEQ
 %left PLUS MINUS
+%left AND OR
 %nonassoc LP RP LB RB
+%nonassoc NOT
 %start main
 %type <Ast.top_level list> main
 %%
@@ -54,6 +57,7 @@ expr:
  | aexpr                        { Atomic_expr $1 }
  | local_def                    { Local_def $1 }
  | IF expr THEN expr ELSE expr  { If($2, $4, $6) }
+ | LP logic_expr RP             { Logic_expr ($2, $1) }
  | LP expr list_expr RP         { Application($2, $3) }
  | LP error RP                  { raise (SyntaxError ("", false, $1)) }
 ;
@@ -85,6 +89,12 @@ aexpr:
  | MINUS                        { Built_In ((Minus),$1) }
  | SORT                         { Built_In ((Sort),$1) }
  | UNIQ                         { Built_In ((Uniq),$1) }
+;
+
+logic_expr:
+ | expr AND expr                { And_expr($1, $3) }
+ | expr OR expr                 { Or_expr($1, $3) }
+ | NOT expr                     { Not_expr($2) }
 ;
 
 arg_list:

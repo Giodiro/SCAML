@@ -48,9 +48,10 @@ and local_def =
   | Func_Loc_Binding of def * (def list) * expr * expr
   | Var_Loc_Binding of def * expr * expr
 and expr = 
-  | Atomic_expr of aexpr 
+  | Atomic_expr of aexpr
   | Local_def of local_def
   | If of expr * expr * expr
+  | Logic_expr of logic_expr * err_location
   | Application of expr * (expr list)
 and aexpr = 
   | Expr of expr
@@ -61,10 +62,14 @@ and aexpr =
   | Bool of myBool * err_location
   | Word of word * err_location
   | Built_In of built_in * err_location
+and logic_expr = 
+  | And_expr of expr * expr
+  | Or_expr of expr * expr
+  | Not_expr of expr 
 and environment =
   | Global_env of binding list
   | Whatever of (binding list) * environment
-(*and frame = { frame_binding : binding list }*)
+  
 and binding = 
 { 
   name_type : def  ;

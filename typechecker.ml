@@ -20,9 +20,9 @@ let rec type_env_of_env env =
 (* lookup: string -> environment -> myType; throws Unbound *)
 let rec lookup name env loc =
  let rec lookup_frame name fr =
- 	match fr with
- 	 | [] -> raise (Unbound (name, loc))
- 	 | h::tail -> (if h.name = name then h.mtype else lookup_frame name tail)
+  match fr with
+   | [] -> raise (Unbound (name, loc))
+   | h::tail -> (if h.name = name then h.mtype else lookup_frame name tail)
  in (match env with
      | Global_env(f) -> lookup_frame name f
      | Whatever(f,e) -> try lookup_frame name f
@@ -98,6 +98,7 @@ and type_check_expr e env = match e with
         | Bool_type -> if (t2 = t3) then (t2, loc2) 
                        else raise (TypeError (t2, t3, loc3))
         | _ as twrong -> raise (TypeError (Bool_type, twrong, loc1)))
+  | Logic_expr (le, loc) -> type_check_logic_expr le env loc
   | Application (e, arg_list) ->
       (let te = type_check_expr e env in match te with
         | (Func_type(parameters), loc) ->
@@ -123,6 +124,25 @@ and type_check_aexpr ae env = match ae with
   | Word(w,loc) -> (String_type,loc)
   | Built_In(bi, loc) -> ((type_check_built_in bi ),loc)
   
+(* type_check_logic_expr: logic_expr -> type_environment -> myType * err_location *)
+and type_check_logic_expr le env loc = match le with
+  | And_expr (e1, e2) -> 
+    (match (type_check_expr e1 env), (type_check_expr e2 env) with
+      | (Bool_type, l1), (Bool_type, l2) -> (Bool_type, loc)
+      | (Bool_type, l1), ((_ as twrong), l2)  -> raise (TypeError (Bool_type, twrong, loc))
+      | ((_ as twrong),l1), (Bool_type, l2)  -> raise (TypeError (Bool_type, twrong, loc))
+      | ((_ as twrong),l1), _          -> raise (TypeError (Bool_type, twrong, loc)))
+  | Or_expr (e1, e2) -> 
+    (match (type_check_expr e1 env), (type_check_expr e2 env) with
+      | (Bool_type, l1), (Bool_type, l2) -> (Bool_type, loc)
+      | (Bool_type, l1), ((_ as twrong), l2) -> raise (TypeError (Bool_type, twrong, loc))
+      | ((_ as twrong),l1), (Bool_type, l2)  -> raise (TypeError (Bool_type, twrong, loc))
+      | ((_ as twrong),l1), _       -> raise (TypeError (Bool_type, twrong, loc)))
+  | Not_expr (e) -> 
+    (match (type_check_expr e env) with
+      | (Bool_type, l1)         -> (Bool_type, loc)
+      | (_ as twrong, l1)       -> raise (TypeError (Bool_type, twrong, loc)))
+
 (* type_check_built_in: built_in -> myType *)
 and type_check_built_in bi = match bi with
   | Cons -> Func_type [String_type; Set_type; Set_type]
