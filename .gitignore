@@ -8,3 +8,4 @@ inputlexer.ml
 inputparser.ml
 *.output
 main
+prog22.sc
