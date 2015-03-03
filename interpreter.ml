@@ -192,6 +192,14 @@ and apply_built_in bi args = match bi with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1, loc1),Int(i2, loc2) -> Int ((i1-i2),loc1)
                               | _ -> raise (WrongType Int_type)))
+  | Mult -> (match args with
+              | [a1; a2] -> (match a1, a2 with
+                              | Int(i1, loc1),Int(i2, loc2) -> Int ((i1*i2),loc1)
+                              | _ -> raise (WrongType Int_type)))
+  | Division -> (match args with
+              | [a1; a2] -> (match a1, a2 with
+                              | Int(i1, loc1),Int(i2, loc2) -> Int ((i1/i2),loc1)
+                              | _ -> raise (WrongType Int_type)))
   | Strcomp -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Word(w1, loc1),Word(w2, loc2)-> Int ((myWordcomp w1 w2),loc1)

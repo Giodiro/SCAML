@@ -66,6 +66,8 @@ rule main = parse
     | ','      { COMMA(loc_from_lexbuf lexbuf) }
     | '+'      { PLUS(loc_from_lexbuf lexbuf) }
     | '-'      { MINUS(loc_from_lexbuf lexbuf) }
+    | '*'      { MULT(loc_from_lexbuf lexbuf) }
+    | '/'      { DIV(loc_from_lexbuf lexbuf) }
     | '('      { LP(loc_from_lexbuf lexbuf) }
     | ')'      { RP(loc_from_lexbuf lexbuf) }
     | '{'      { LB(loc_from_lexbuf lexbuf) }

@@ -26,7 +26,9 @@ type built_in =
   | Wordeq 
   | Seteq 
   | Plus 
-  | Minus 
+  | Minus
+  | Mult
+  | Division 
   | Strcomp 
   | Strapp 
   | Sort 

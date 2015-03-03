@@ -153,6 +153,8 @@ and type_check_built_in bi = match bi with
   | Seteq -> Func_type [Set_type; Set_type; Bool_type]
   | Plus -> Func_type [Int_type; Int_type; Int_type]
   | Minus -> Func_type [Int_type; Int_type; Int_type]
+  | Mult -> Func_type [Int_type; Int_type; Int_type]
+  | Division -> Func_type [Int_type; Int_type; Int_type]
   | Strcomp -> Func_type [String_type; String_type; Bool_type]
   | Strapp -> Func_type [String_type; String_type; String_type]
   | Sort -> Func_type [Set_type; Set_type]

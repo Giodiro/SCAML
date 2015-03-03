@@ -5,7 +5,7 @@
 %token <Ast.err_location> IF THEN ELSE 
 %token <Ast.err_location> LET IN ASS END TYPEOF
 %token <Ast.err_location> CONS HEAD TAIL STRCOMP STRAPP SORT UNIQ
-%token <Ast.err_location> INTEQ WORDEQ SETEQ PLUS MINUS 
+%token <Ast.err_location> INTEQ WORDEQ SETEQ PLUS MINUS MULT DIV
 %token <Ast.err_location> LP RP LB RB
 %token <Ast.err_location> COMMA EMPTY_WORD
 %token <Ast.err_location> FALSE TRUE
@@ -18,7 +18,7 @@
 %token <string*Ast.err_location> WORD
 %right IF THEN ELSE
 %left INTEQ WORDEQ SETEQ
-%left PLUS MINUS
+%left PLUS MINUS MULT DIV
 %left AND OR
 %nonassoc LP RP LB RB
 %nonassoc NOT
@@ -87,6 +87,8 @@ aexpr:
  | SETEQ                        { Built_In ((Seteq),$1) }
  | PLUS                         { Built_In ((Plus),$1) }
  | MINUS                        { Built_In ((Minus),$1) }
+ | MULT                         { Built_In ((Mult),$1) }
+ | DIV                          { Built_In ((Division),$1) }
  | SORT                         { Built_In ((Sort),$1) }
  | UNIQ                         { Built_In ((Uniq),$1) }
 ;
