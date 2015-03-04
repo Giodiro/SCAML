@@ -7,11 +7,11 @@ let curr_loc = ref {lnum=0;cnum=0;token=""}
 
 let syntax_error lnum cnum msg tok =
     raise (SyntaxError ("", false,{lnum=lnum; cnum=cnum; token=tok}))
-
+(*
 let create_hashtable size init =
   let tbl = Hashtbl.create size in
     List.iter (fun (key, data) -> Hashtbl.add tbl key data) init;
-    tbl
+    tbl*)
 
 let loc_from_lexbuf lexbuf =
   let curr = lexbuf.Lexing.lex_curr_p in
@@ -20,7 +20,7 @@ let loc_from_lexbuf lexbuf =
       cnum=(curr.Lexing.pos_cnum - curr.Lexing.pos_bol);
       token=(Lexing.lexeme lexbuf);
    }
-    
+(*
 let keyword_table = 
   create_hashtable 32 [
     ("if", IF(!curr_loc));
@@ -43,7 +43,30 @@ let keyword_table =
     ("true", TRUE(!curr_loc));
     ("wordeq", WORDEQ(!curr_loc));
     ("seteq", SETEQ(!curr_loc))
-  ] 
+  ]*) 
+  
+let match_keyword kw = match kw with
+  | "if" -> IF(!curr_loc)
+  | "then" -> THEN(!curr_loc)
+  | "else" -> ELSE(!curr_loc)
+  | "let" -> LET(!curr_loc)
+  | "in" -> IN(!curr_loc)
+  | "cons" -> CONS(!curr_loc)
+  | "head" -> HEAD(!curr_loc)
+  | "tail" -> TAIL(!curr_loc)
+  | "strcomp" -> STRCOMP(!curr_loc)
+  | "strapp" -> STRAPP(!curr_loc)
+  | "sort" -> SORT(!curr_loc)
+  | "uniq" -> UNIQ(!curr_loc)
+  | "set" -> TYPE(Set_type,(!curr_loc))
+  | "string" -> TYPE(String_type,(!curr_loc))
+  | "int" -> TYPE(Int_type,(!curr_loc))
+  | "bool" -> TYPE(Bool_type,(!curr_loc))
+  | "false" -> FALSE(!curr_loc)
+  | "true" -> TRUE(!curr_loc)
+  | "wordeq" -> WORDEQ(!curr_loc)
+  | "seteq" -> SETEQ(!curr_loc)
+  | _ -> raise Not_found
 } 
 
 let digit = ['0'-'9']
@@ -58,8 +81,10 @@ rule main = parse
     | '"' ':' '"'   { EMPTY_WORD (loc_from_lexbuf lexbuf) }
     | id as var   
       { try
-          let token = Hashtbl.find keyword_table var in
-          (curr_loc := loc_from_lexbuf lexbuf; token )
+          begin
+            curr_loc := loc_from_lexbuf lexbuf;
+            match_keyword var;
+          end  
         with Not_found -> VAR (var,(loc_from_lexbuf lexbuf))}
     | ':'      { TYPEOF(loc_from_lexbuf lexbuf) }
     | '='      { ASS(loc_from_lexbuf lexbuf) }
