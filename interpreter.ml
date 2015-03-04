@@ -149,6 +149,7 @@ and interpret_logic_expr le env = match le with
 and args_bindings params args env = match params, args with
   | [],[] -> env
   | (ph::pt),(ah::at) -> args_bindings pt at (make_binding ph ah env)
+  | _ -> failwith ""
   
 (* apply_closure: closure -> list aexpr -> aexpr *)
 and apply_closure c args =
@@ -160,61 +161,75 @@ and apply_built_in bi args = match bi with
   | Cons -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Word(w, loc1),Set(wl, loc2) -> Set ((myCons w wl),loc1)
-                              | _ -> raise (WrongType String_type)))
+                              | _ -> raise (WrongType String_type))
+              | _ -> failwith "")
   | Head -> (match args with
               | [a1] -> (match a1 with
                           | Set(s, loc1) -> Word ((myHead s), loc1)
-                          | _ -> raise (WrongType Set_type)))
+                          | _ -> raise (WrongType Set_type))
+              | _ -> failwith "")
   | Tail -> (match args with
               | [a1] -> (match a1 with
                           | Set(s, loc1) -> Set ((myTail s), loc1)
-                          | _ -> raise (WrongType Set_type)))
+                          | _ -> raise (WrongType Set_type))
+              | _ -> failwith "")
   | Inteq -> (match args with
                 | [a1; a2] -> (match a1, a2 with
                                 | Int(i1, loc1), Int(i2, loc2) -> 
                                   (Bool ((myEq i1 i2), loc1))
-                                | _, _        -> raise (WrongType Int_type)))
+                                | _, _        -> raise (WrongType Int_type))
+                | _ -> failwith "")
   | Wordeq -> (match args with
                 | [a1; a2] -> (match a1, a2 with
                                 | Word(w1, loc1), Word(w2, loc2) -> 
                                   (Bool ((if (myWordcomp w1 w2) = 0 then T else F), loc1))
-                                | _, _        -> raise (WrongType String_type)))
+                                | _, _        -> raise (WrongType String_type))
+                | _ -> failwith "")
   | Seteq -> (match args with
                 | [a1; a2] -> (match a1, a2 with
                                 | Set(s1, loc1), Set(s2, loc2) -> 
                                   (Bool ((mySetEq s1 s2), loc1))
-                                | _, _        -> raise (WrongType Set_type)))
+                                | _, _        -> raise (WrongType Set_type))
+                | _ -> failwith "")
   | Plus -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1, loc1),Int(i2, loc2) -> Int ((i1+i2),loc1)
-                              | _ -> raise (WrongType Int_type)))
+                              | _ -> raise (WrongType Int_type))
+              | _ -> failwith "")
   | Minus -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1, loc1),Int(i2, loc2) -> Int ((i1-i2),loc1)
-                              | _ -> raise (WrongType Int_type)))
+                              | _ -> raise (WrongType Int_type))
+              | _ -> failwith "")
   | Mult -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1, loc1),Int(i2, loc2) -> Int ((i1*i2),loc1)
-                              | _ -> raise (WrongType Int_type)))
+                              | _ -> raise (WrongType Int_type))
+              | _ -> failwith "")
   | Division -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Int(i1, loc1),Int(i2, loc2) -> Int ((i1/i2),loc1)
-                              | _ -> raise (WrongType Int_type)))
+                              | _ -> raise (WrongType Int_type))
+              | _ -> failwith "")
   | Strcomp -> (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Word(w1, loc1),Word(w2, loc2)-> Int ((myWordcomp w1 w2),loc1)
-                              | _ -> raise (WrongType String_type)))
+                              | _ -> raise (WrongType String_type))
+              | _ -> failwith "")
   | Strapp ->  (match args with
               | [a1; a2] -> (match a1, a2 with
                               | Word(w1, loc1),Word(w2, loc2) -> (Word ((myStrapp w1 w2),loc1))
-                              | _ -> raise (WrongType String_type)))
+                              | _ -> raise (WrongType String_type))
+              | _ -> failwith "")
   | Sort   -> (match args with
               | [a1] -> (match a1 with
                           | Set(s, loc1) -> Set ((mySort s),loc1)
-                          | _ -> raise (WrongType Set_type)))
+                          | _ -> raise (WrongType Set_type))
+              | _ -> failwith "")
   | Uniq   -> (match args with
               | [a1] -> (match a1 with
                           | Set(s, loc1) -> Set ((myUniq s),loc1)
-                          | _ -> raise (WrongType Set_type)))
+                          | _ -> raise (WrongType Set_type))
+              | _ -> failwith "")
 ;;
 (* END Interpreter *)

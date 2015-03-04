@@ -123,6 +123,7 @@ and type_check_aexpr ae env = match ae with
   | Bool(b, loc) -> (Bool_type,loc)
   | Word(w,loc) -> (String_type,loc)
   | Built_In(bi, loc) -> ((type_check_built_in bi ),loc)
+  | _ -> failwith " "
   
 (* type_check_logic_expr: logic_expr -> type_environment -> myType * err_location *)
 and type_check_logic_expr le env loc = match le with

@@ -17,6 +17,7 @@ let pretty_print_error err msg = match err with
       print_int cnum;
       print_string " while reading token ";
       print_string token; print_newline ();)
+  | _ -> failwith " "
 
 let hasError = ref false
 (* 
@@ -91,8 +92,8 @@ let main () =
       | Typechecker.TypeError (et, wt, loc) -> 
           (print_string "Type error on line "; print_int loc.lnum;
            print_string " character "; print_int loc.cnum;
-           print_string " type of "; print_string loc.token;
-           print_string " is "; print_string (string_of_type wt);
+           print_string ". The type of token \""; print_string loc.token;
+           print_string "\" is "; print_string (string_of_type wt);
            print_string ". Expected type "; print_string (string_of_type et);
            print_newline ())
       | (ParseError (_)) as e -> 
@@ -104,8 +105,8 @@ let main () =
       | WrongNumberOfArguments (ex,ac, loc) -> 
           (print_string "Line "; print_int loc.lnum;
            print_string " character "; print_int loc.cnum;
-           print_string " - wrong number of arguments in application of ";
-           print_string loc.token; print_string " expected ";
+           print_string " - wrong number of arguments in application of function \"";
+           print_string loc.token; print_string "\". Expected ";
            print_int ex; print_string " arguments. ";
            print_string "The function is not applicable to "; 
            print_int ac; print_string " arguments.";
@@ -113,8 +114,8 @@ let main () =
       | Unbound (s, loc) ->
           (print_string "Line "; print_int loc.lnum;
            print_string " character "; print_int loc.cnum;
-           print_string ". Variable ";
-           print_string s; print_string " is not bound.";
+           print_string ". Variable \"";
+           print_string s; print_string "\" is not bound.";
            print_newline ())
       | Failure (s) -> print_string "Error: exiting."
 ;;
