@@ -208,7 +208,9 @@ and apply_built_in bi args = match bi with
               | _ -> failwith "")
   | Division -> (match args with
               | [a1; a2] -> (match a1, a2 with
-                              | Int(i1, loc1),Int(i2, loc2) -> Int ((i1/i2),loc1)
+                              | Int(i1, loc1),Int(i2, loc2) -> (match i2 with
+                                                                  | 0 -> raise (DivisionByZero ("Divizion by zero", loc2))
+                                                                  | _ -> Int ((i1/i2),loc1))
                               | _ -> raise (WrongType Int_type))
               | _ -> failwith "")
   | Strcomp -> (match args with

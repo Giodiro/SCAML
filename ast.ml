@@ -89,6 +89,7 @@ exception HeadOfEmptySet
 exception TailOfEmptySet
 exception NotApplicable
 exception WrongNumberOfArguments of int * int * err_location(* expected number of args * actual number of args *)
+exception DivisionByZero of string * err_location 
 exception WrongType of myType (* expectedmtype *)
 exception ParseError of int * int * string
 exception UsageException of string

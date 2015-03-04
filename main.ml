@@ -117,6 +117,11 @@ let main () =
            print_string ". Variable \"";
            print_string s; print_string "\" is not bound.";
            print_newline ())
+      | DivisionByZero (s, loc) -> 
+          (print_string "Division by zero on \"";
+           print_string "Line "; print_int loc.lnum;
+           print_string " character "; print_int loc.cnum;
+           print_newline ())
       | Failure (s) -> print_string "Error: exiting."
 ;;
 
