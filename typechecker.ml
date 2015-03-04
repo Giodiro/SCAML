@@ -130,19 +130,19 @@ and type_check_logic_expr le env loc = match le with
   | And_expr (e1, e2) -> 
     (match (type_check_expr e1 env), (type_check_expr e2 env) with
       | (Bool_type, l1), (Bool_type, l2) -> (Bool_type, loc)
-      | (Bool_type, l1), ((_ as twrong), l2)  -> raise (TypeError (Bool_type, twrong, loc))
-      | ((_ as twrong),l1), (Bool_type, l2)  -> raise (TypeError (Bool_type, twrong, loc))
-      | ((_ as twrong),l1), _          -> raise (TypeError (Bool_type, twrong, loc)))
+      | (Bool_type, l1), ((_ as twrong), l2)  -> raise (TypeError (Bool_type, twrong, l2))
+      | ((_ as twrong),l1), (Bool_type, l2)  -> raise (TypeError (Bool_type, twrong, l1))
+      | ((_ as twrong),l1), _          -> raise (TypeError (Bool_type, twrong, l1)))
   | Or_expr (e1, e2) -> 
     (match (type_check_expr e1 env), (type_check_expr e2 env) with
       | (Bool_type, l1), (Bool_type, l2) -> (Bool_type, loc)
-      | (Bool_type, l1), ((_ as twrong), l2) -> raise (TypeError (Bool_type, twrong, loc))
-      | ((_ as twrong),l1), (Bool_type, l2)  -> raise (TypeError (Bool_type, twrong, loc))
-      | ((_ as twrong),l1), _       -> raise (TypeError (Bool_type, twrong, loc)))
+      | (Bool_type, l1), ((_ as twrong), l2) -> raise (TypeError (Bool_type, twrong, l1))
+      | ((_ as twrong),l1), (Bool_type, l2)  -> raise (TypeError (Bool_type, twrong, l2))
+      | ((_ as twrong),l1), _       -> raise (TypeError (Bool_type, twrong, l1)))
   | Not_expr (e) -> 
     (match (type_check_expr e env) with
-      | (Bool_type, l1)         -> (Bool_type, loc)
-      | (_ as twrong, l1)       -> raise (TypeError (Bool_type, twrong, loc)))
+      | (Bool_type, l1)         -> (Bool_type, l1)
+      | (_ as twrong, l1)       -> raise (TypeError (Bool_type, twrong, l1)))
 
 (* type_check_built_in: built_in -> myType *)
 and type_check_built_in bi = match bi with
