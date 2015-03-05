@@ -116,7 +116,6 @@ and type_check_expr e env = match e with
       
 (* type_check_aexpr: aexpr -> type_environment -> myType * err_location *)
 and type_check_aexpr ae env = match ae with
-  | Expr(e) -> type_check_expr e env
   | Var(v, loc) -> ((lookup v env loc),loc)
   | Set(s, loc) -> (Set_type,loc)
   | Int(i, loc) -> (Int_type,loc)

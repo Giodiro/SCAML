@@ -18,7 +18,8 @@
 %token <string*Ast.err_location> WORD
 %right IF THEN ELSE
 %left INTEQ WORDEQ SETEQ
-%left PLUS MINUS MULT DIV
+%left PLUS MINUS
+%left MULT DIV
 %left AND OR
 %nonassoc LP RP LB RB
 %nonassoc NOT
@@ -47,31 +48,30 @@ glob_def:
 local_def:
  | LET VAR LP arg_list RP TYPEOF TYPE ASS expr IN expr 
                  { Func_Loc_Binding({name = (fst $2); mtype = (fst $7);}, $4, $9, $11) }
- | LET VAR LP error RP TYPEOF TYPE ASS expr IN expr 
-                { raise (SyntaxError ("", false, $3)) }
  | LET VAR TYPEOF TYPE ASS expr IN expr 
                  { Var_Loc_Binding({name = (fst $2); mtype = (fst $4);}, $6, $8) }
+ | LET VAR error TYPEOF TYPE ASS
+                { raise (SyntaxError ("Syntax error in type declaration", true, (snd $2))) }
 ;
 
 expr:
  | aexpr                        { Atomic_expr $1 }
  | local_def                    { Local_def $1 }
- | IF expr THEN expr ELSE expr  { If($2, $4, $6) }
+ | LP if_expr RP                { $2 }
  | LP logic_expr RP             { Logic_expr ($2, $1) }
  | LP expr list_expr RP         { Application($2, $3) }
- | LP error RP                  { raise (SyntaxError ("", false, $1)) }
+ | LP error RP                  { raise (SyntaxError ("", false, $1))}
 ;
+if_expr:
+ | IF expr THEN expr ELSE expr  { If($2, $4, $6) }
+ | IF error                  { raise (SyntaxError ("Missing then clause", true, $1)) }
+ | expr THEN                  { raise (SyntaxError ("Missing if clause", true, $2)) }
+ | IF expr THEN error       { raise (SyntaxError ("Missing else clause", true, $3)) }
 
 aexpr:
- | LP expr RP                   { Expr($2) }
- | LP error                     { raise (SyntaxError ("( might be unmatched", true, $1))}
- | error RP                     { raise (SyntaxError (") might be unmatched", true, $2))}
- | LP error RP                  { raise (SyntaxError ("", false, $1)) }
  | VAR                          { Var ((fst $1),(snd $1)) }
  | LB word_list RB              { Set($2,$1) }
- | LB error RB                  { raise (SyntaxError ("", false, $1)) }
- | LB error                     { raise (SyntaxError ("{ might be unmatched", true, $1)) } 
- | error RB                     { raise (SyntaxError ("} might be unmatched", true, $2)) }
+ | LB error RB                  { raise (SyntaxError ("Syntax error in language definition", true, $1)) }
  | INT                          { Int((fst $1),(snd $1)) }
  | WORD                         { Word ((Non_Empty_Word((fst $1))),(snd $1)) }
  | EMPTY_WORD                   { Word (Empty_Word, $1) }
@@ -124,11 +124,13 @@ non_empty_list_expr:
 
 word_list:
  | /* empty */                  { [] }
- | word                         { [$1] }
- | word COMMA word_list         { $1::$3}
+ | word                         { [(fst $1)] }
+ | word COMMA word_list         { (fst $1)::$3}
+ | word word               { raise (SyntaxError ("Words must be separated by commas", true, (snd $1))) }
+ | VAR                          { raise (SyntaxError ("Words must be enclosed in quotes.", true, (snd $1))) }
 ;
 
 word:
- | WORD                         { Non_Empty_Word((fst $1)) }
- | EMPTY_WORD                   { Empty_Word }
+ | WORD                         { (Non_Empty_Word((fst $1)), (snd $1)) }
+ | EMPTY_WORD                   { (Empty_Word, $1) }
 ;

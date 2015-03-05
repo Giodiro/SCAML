@@ -6,7 +6,7 @@ open Ast
 let curr_loc = ref {lnum=0;cnum=0;token=""}
 
 let syntax_error lnum cnum msg tok =
-    raise (SyntaxError ("", false,{lnum=lnum; cnum=cnum; token=tok}))
+    raise (SyntaxError (("token " ^ tok ^ " not recognized"), true,{lnum=lnum; cnum=cnum; token=tok}))
 
 let loc_from_lexbuf lexbuf =
   let curr = lexbuf.Lexing.lex_curr_p in

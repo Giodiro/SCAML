@@ -127,7 +127,6 @@ and interpret_expr e env = match e with
 
 (* interpret_aexpr: aexpr -> environment -> aexpr *)
 and interpret_aexpr ae env = match ae with
-  | Expr(e)         -> interpret_expr e env
   | Var(var_name, loc) -> lookup var_name env loc
   | _ as x -> x
 

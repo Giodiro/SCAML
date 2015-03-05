@@ -56,7 +56,6 @@ and expr =
   | Logic_expr of logic_expr * err_location
   | Application of expr * (expr list)
 and aexpr = 
-  | Expr of expr
   | Closure of closure  (* This type is only visible to the interpreter *)
   | Var of string * err_location
   | Set of (word list) * err_location
