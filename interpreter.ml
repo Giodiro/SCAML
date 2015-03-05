@@ -1,6 +1,5 @@
 open Ast
 open Library
-open Printf
 
 (* SECTION Environment helpers *)
  
@@ -20,8 +19,7 @@ let rec lookup name env loc =
 (* make_binding: def -> aexpr -> environment -> environment *)
 let make_binding name valu env = match env with
   | Global_env(e) -> let nBind = {name_type = name; value = valu} in
-                       (printf "extending global environment with %s\n" name.name;
-                       (Global_env (nBind::e)))
+                       (Global_env (nBind::e))
   | Whatever (fr, rest) -> let nBind = {name_type = name; value = valu} in
                        (Whatever (nBind::fr, rest))    (* cons the new binding to the beginning of the frame *)
 ;;
@@ -76,10 +74,8 @@ and interpret_tl_list tl_list env =
    | [] -> ()
    | h::t -> 
     (match h with
-     | Definition (d) -> print_endline "Detected def";
-                         interpret_tl_list t (interpret_global_def d env)
-     | Expression (e) -> print_endline "Detected expr";
-                         print_aexpr (interpret_expr e env);
+     | Definition (d) -> interpret_tl_list t (interpret_global_def d env)
+     | Expression (e) -> print_aexpr (interpret_expr e env);
                          interpret_tl_list t env)
 
 (* interpret_global_def: global_def -> environment -> environment *)

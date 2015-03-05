@@ -30,10 +30,9 @@ let rec lookup name env loc =
 ;;
 
 (* make_binding: def -> environment -> environment *)
-let make_binding name env = (print_endline ("making binding for " ^ name.name);
-  match env with
+let make_binding name env = match env with
   | Global_env(e) -> (Global_env (name::e))
-  | Whatever (fr, rest) -> (Whatever (name::fr, rest)))
+  | Whatever (fr, rest) -> (Whatever (name::fr, rest))
 ;;
 
 (* extend_env: environment -> environment *)
@@ -49,7 +48,6 @@ let rec type_check tl_list start_env = match tl_list with
     (match h with
       | Definition (gd) -> type_check t (type_check_glob_def gd start_env)
       | Expression (e) -> begin 
-                            print_endline "in type checker";
                             ignore (type_check_expr e start_env);
                             type_check t start_env;
                           end)

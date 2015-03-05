@@ -80,19 +80,3 @@ rule main = parse
                               "Syntax error" 
                               (Lexing.lexeme lexbuf)}
     | eof      { EOF(loc_from_lexbuf lexbuf) }
-(*
-{
-let main2 () =
-  let cin =
-    if Array.length Sys.argv > 1
-    then open_in Sys.argv.(1)
-    else stdin
-  in
-  try
-    let lexbuf = Lexing.from_channel cin in
-      main lexbuf
-  with Eof -> print_endline "Eof"; EOF
-;;
-
-let _ = Printexc.print main2 ()
-}*)
