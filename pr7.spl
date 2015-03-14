@@ -1,0 +1,26 @@
+let postfixwithA:string = "a";;
+let postfixwithB:string = "b";;
+
+let postfix (lang:set post:string):set = 
+    (if (seteq lang {})
+    then {}
+    else (cons (strapp (head lang) post) (postfix (tail lang) post)))
+;;
+
+let union (first:set second:set):set = 
+    (if (seteq first {}) 
+    then (if (seteq second {}) then {} else (union second {}))
+    else (cons (head first) (union (tail first) second)))
+;;
+
+let restrict (ins:set num:int):set = 
+    (if (== num 0) then {}
+    else (if (seteq ins {}) then {}
+          else (cons (head ins) (restrict (tail ins) (- num 1)))))
+;;
+
+let setOneTwoUnion:set = (restrict (sort (union arg0 arg1)) maxoutput) in 
+    (postfix setOneTwoUnion postfixwithA);;
+
+let setTwoThreeUnion:set = (restrict (sort (union arg0 arg2)) maxoutput) in 
+    (postfix setTwoThreeUnion postfixwithB);;

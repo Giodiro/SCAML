@@ -1,0 +1,26 @@
+let postfixwithA:string = "a";;
+let postfixwithB:string = "b";;
+
+let map (s:set f:string->string):set =
+    (if (seteq s {}) then {}
+    else (cons (f (head s)) (map (tail s) f)))
+;;
+
+let help (str:string post:string):string =
+    (strapp str post)
+;;
+
+let union (first:set second:set):set = 
+    (if (seteq first {}) 
+    then (if (seteq second {}) then {} else (union second {}))
+    else (cons (head first) (union (tail first) second)))
+;;
+
+let restrict (ins:set num:int):set = 
+    (if (== num 0) then {}
+    else (if (seteq ins {}) then {}
+          else (cons (head ins) (restrict (tail ins) (- num 1)))))
+;;
+
+let setsUnion:set = (restrict (sort (union arg0 arg1)) maxoutput) in 
+    (map setsUnion help);;
