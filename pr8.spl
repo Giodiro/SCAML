@@ -1,12 +1,10 @@
 let postfixwithA:string = "a";;
+let postfixwithB:string = "b";;
 
-let map (s:set f:string->string):set =
-    (if (seteq s {}) then {}
-    else (cons (f (head s)) (map (tail s) f)))
-;;
-
-let help (str:string):string =
-    (strapp str postfixwithA)
+let postfix (lang:set post:string):set = 
+    (if (seteq lang {})
+    then {}
+    else (cons (strapp (head lang) post) (postfix (tail lang) post)))
 ;;
 
 let union (first:set second:set):set = 
@@ -21,5 +19,4 @@ let restrict (ins:set num:int):set =
           else (cons (head ins) (restrict (tail ins) (- num 1)))))
 ;;
 
-let setsUnion:set = (restrict (sort (union arg0 arg1)) maxoutput) in 
-    (map setsUnion help);;
+(restrict (sort (union (postfix arg0 postfixwithA) (postfix arg1 postfixwithB))) maxoutput);;

@@ -1,0 +1,52 @@
+let asterate (max:int appendTo:string ast:string):set =
+    let help (max:int as:string):set =
+        (if (== max 0) then {}
+        else (cons (strapp appendTo as) (help (- max 1) (strapp as ast))))
+    in (help max ":")
+;;
+
+let union (first:set second:set):set = 
+    (if (seteq first {}) then (if (seteq second {}) then {} else (union second {}))
+                     else (cons (head first) (union (tail first) second)))
+;;
+
+let astGen (max:int ast:string):set = 
+    let help (max:int as:string):set = 
+        (if (== max 0) then {}
+        else (cons as (help (- max 1) (strapp as ast))))
+    in (help max ":")
+;;
+let postfix (post:set word:string):set = 
+    (if (seteq post {})
+    then {}
+    else (cons (strapp word (head post)) (postfix (tail post) word)))
+;;
+let concatenate(lang:set post:set):set = 
+    (if (seteq lang {}) then {} else
+    (union (postfix post (head lang))
+           (concatenate (tail lang) post)))
+;;
+
+let restrict (ins:set num:int):set = 
+    (if (== num 0) then {}
+    else (if (seteq ins {}) then {}
+          else (cons (head ins) (restrict (tail ins) (- num 1)))))
+;;
+
+
+
+(restrict (sort (union (if (seteq arg0 {})
+                        then {}
+                        else (asterate maxoutput (head (sort arg0)) "a")) 
+                       (if (seteq arg1 {})
+                        then {}
+                        else (asterate maxoutput (head (sort arg1)) "b")))) 
+          maxoutput);;
+
+(restrict (sort (union (if (seteq arg0 {})
+                        then {}
+                        else (concatenate arg0 (astGen maxoutput "a"))) 
+                       (if (seteq arg1 {})
+                        then {}
+                        else (concatenate arg1 (astGen maxoutput "b"))))) 
+          maxoutput);;

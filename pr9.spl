@@ -1,0 +1,27 @@
+let postfix (post:set word:string):set = 
+    (if (seteq post {})
+    then {}
+    else (cons (strapp word (head post)) (postfix (tail post) word)))
+;;
+
+let union (first:set second:set):set = 
+    (if (seteq first {}) 
+    then (if (seteq second {}) then {} else (union second {}))
+    else (cons (head first) (union (tail first) second)))
+;;
+
+let concatenate(lang:set post:set):set = 
+    (if (seteq lang {}) then {} else
+    (union (postfix post (head lang))
+           (concatenate (tail lang) post)))
+;;
+
+let restrict (ins:set num:int):set = 
+    (if (== num 0) then {}
+    else (if (seteq ins {}) then {}
+          else (cons (head ins) (restrict (tail ins) (- num 1)))))
+;;
+
+let abset:set = {"a", "b"};;
+
+(restrict (sort (concatenate (union arg0 arg1) abset)) maxoutput);;
