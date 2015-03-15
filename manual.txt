@@ -1,0 +1,36 @@
+SCAML Manual
+--- Explain syntax
+	--- Program structure
+		--- List of definitions and applications at the top level. Each delimited by ;; (Ocaml)
+	--- Local definitions are possible inside functions
+	--- Functions can take multiple arguments.
+	--- Scheme like syntax: application delimited by brackets
+	--- Function definition syntax: (arg:type ...)
+	---
+--- Design decisions
+	--- Pure functional -> no side effects
+	--- Statically typed (type checking done before interpretation)
+	--- Strongly typed (but no inference, types must be explicitly declared)
+	--- Lambdas\Function type (higher order functions)
+	--- Environment
+	--- Types
+		--- 'words' (in our language strings) are quoted, because it's more extensible. Therefore we have to parse input differently
+--- Describe additional features
+	--- Programmer convenience
+		--- Library: basic functions on types
+			--- useful cons which is designed to deal with sets (discard duplicates)
+			--- generic list operations such as head and tail
+			--- specific set operations (uniq, seteq, sort)
+		--- Logic/Math operations
+	--- Type checking
+		--- The type checker has a separate environment (bindings name -> type)
+		--- Catches most programming errors
+		--- Usually can tell what the correct type was -> error message
+	--- Informative error messages
+		--- Lexer level -> detect invalid tokens
+		--- Parser levels -> detect missing/invalid constructs
+		--- Type checker (see above)
+		--- Interpreter -> Runtime errors
+		--- Added location data to our AST to report error location.
+	--- 
+
