@@ -34,3 +34,9 @@ SCAML Manual
 		--- Added location data to our AST to report error location.
 	--- 
 
+Actual Manual
+ 1) Syntax
+ Each program in the language is structured as a sequence of function and variable definitions and function applications. Each such program fragment is delimited by ;; as in OCaml. Bindings between names and expressions are made when the function or variable is defined which means that any declaration should come before using the identifier in the program. Otherwise an 'Unbound' error message is thrown. 
+ The language syntax allows local definitions within functions. As in any functional language they are not visible from outside the declaration and are usable only in the 'in' clasue which is their scope. 
+ In order to make fucntions as generic as possible they are allowed to take any number of arguments. The syntax for defining functions is let <func_name> (<arg1:arg_type1> <arg2:arg_type2> ... <argn:arg_typen>):<func_return_type> = <expr>;; (*can move the syntax to the block of syntactic rules at the end*)
+ Function application is surrounded in brackets where the first identifier is the function and the rest are the arguments.    
