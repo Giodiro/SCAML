@@ -12,7 +12,7 @@ SCAML Manual
 	--- Statically typed (type checking done before interpretation)
 	--- Strongly typed (but no inference, types must be explicitly declared)
 	--- Lambdas\Function type (higher order functions)
-	--- Environment
+	--- Environment (works like Scheme, extended when applying)
 	--- Types
 		--- 'words' (in our language strings) are quoted, because it's more extensible. Therefore we have to parse input differently
 --- Describe additional features
